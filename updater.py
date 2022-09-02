@@ -113,14 +113,15 @@ class PullRequest:
         }
 
 
-def main(zap_addons_path: str, dockerfile_path: str, xml_url: str) -> None:
+def main(zap_addons_path: str, dockerfile_path: str, xml_url: str, publish: bool) -> None:
     logging.basicConfig(
         format="%(asctime)s %(filename)s | %(levelname)s | %(funcName)s | %(message)s",
         level=logging.WARNING,
     )
     addons = build_addons(zap_addons_path, xml_url)
     needs_publishing = write_dockerfile(addons, dockerfile_path)
-    if needs_publishing:
+
+    if needs_publishing & publish:
         pr = publish_changes(dockerfile_path, commit_message(addons))
         slack.Notifier("team-platops-alerts").send_info(":owasp-zap: ZAP addons update", pr.title, pr.url)
 
@@ -497,6 +498,11 @@ if __name__ == "__main__":
         default=xml_url,
         help="URL to XML documents which lists ZAP addons",
     )
+    parser.add_argument(
+        "--no-publish",
+        action="store_false",
+        help="do not create a PR of the changes",
+    )
 
     args = parser.parse_args()
-    main(args.addons, args.dockerfile, args.url)
+    main(args.addons, args.dockerfile, args.url, args.no_publish)
