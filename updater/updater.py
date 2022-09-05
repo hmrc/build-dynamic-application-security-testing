@@ -472,8 +472,8 @@ if __name__ == "__main__":
     # get absolute path to this script for walking this repo
     script_directory = os.path.dirname(os.path.abspath(__file__))
     zap_addons_path = os.path.normpath(os.path.join(script_directory, "zap_addons"))
-    dockerfile_path = os.path.normpath(os.path.join(script_directory, "Dockerfile"))
-    zap_version = get_zap_version(os.path.normpath(os.path.join(script_directory, ".zap-version")))
+    dockerfile_path = os.path.normpath(os.path.join(script_directory, "../Dockerfile"))
+    zap_version = get_zap_version(os.path.normpath(os.path.join(script_directory, "../.zap-version")))
     xml_url = f"https://raw.githubusercontent.com/zaproxy/zap-admin/master/ZapVersions-{zap_version}.xml"
 
     parser = argparse.ArgumentParser(description="Update ZAP Addons in Dockerfile.")
