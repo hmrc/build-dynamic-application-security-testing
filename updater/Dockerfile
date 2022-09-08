@@ -1,6 +1,6 @@
 ARG PYTHON_VERSION
 
-FROM python:${PYTHON_VERSION}-alpine AS linter-base
+FROM python:${PYTHON_VERSION}-alpine AS pipenv
 RUN apk add --no-cache shadow~=4.8
 # UID of current user who runs the build
 ARG user_id
@@ -33,28 +33,6 @@ RUN groupmod -g 64 dialout \
         && gpasswd --add builder docker; \
     fi \
     && chown -R builder:union "${workdir}"
-
-FROM linter-base AS shfmt
-ARG SHFMT_VERSION=3.1.2
-RUN wget -qO /bin/shfmt \
-    "https://github.com/mvdan/sh/releases/download/v${SHFMT_VERSION}/shfmt_v${SHFMT_VERSION}_linux_amd64" \
-    && chmod a+x /bin/shfmt
-USER builder
-ENTRYPOINT [ "/bin/shfmt" ]
-
-FROM linter-base AS shellcheck
-SHELL ["/bin/ash", "-o", "pipefail", "-c"]
-ARG SHELLCHECK_VERSION=0.7.1
-RUN apk add --no-cache xz~=5.2 && \
-    wget -qO- \
-        "https://github.com/koalaman/shellcheck/releases/download/v${SHELLCHECK_VERSION}/shellcheck-v${SHELLCHECK_VERSION}.linux.x86_64.tar.xz" \
-    | tar -C /bin --strip-components 1 -xJv "shellcheck-v${SHELLCHECK_VERSION}/shellcheck"
-USER builder
-ENTRYPOINT [ "/bin/shellcheck" ]
-
-FROM docker/compose:1.29.2 AS docker-compose
-
-FROM linter-base AS pipenv
 RUN apk add --no-cache \
     bash=~5.1 \
     curl=~7.79 \
@@ -65,9 +43,6 @@ RUN apk add --no-cache \
     make=~4.3 \
     && pip install --no-cache-dir pipenv==2020.8.13
 USER builder
-# Install Python dependencies so they are cached
-ARG workdir
-WORKDIR ${workdir}
 COPY --chown=builder:union Pipfile Pipfile.lock ./
 RUN pipenv install --ignore-pipfile --dev
 ENTRYPOINT [ "/usr/local/bin/pipenv" ]

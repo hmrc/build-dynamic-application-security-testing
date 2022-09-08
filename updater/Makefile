@@ -22,21 +22,8 @@ DOCKER = docker run \
 	--volume "/var/run/docker.sock:/var/run/docker.sock" \
 	--workdir "${PWD}"
 
-SCANNERS_CONFIG ?= zap/configs/sm-frontend.json
-ALERT_FILTERS_CONFIG ?= ./zap/configs/alert-filters.json
-
 SHELL := /bin/bash
 .SHELLFLAGS := -euo pipefail -O globstar -c
-
-OS := $(shell uname)
-
-ifeq ($(OS), Darwin)
-DOCKER_GROUP_ID = $(shell dscl . -read /Groups/staff | awk '($$1 == "PrimaryGroupID:") { print $$2 }')
-endif
-
-ifeq ($(OS), Linux)
-DOCKER_GROUP_ID = $(shell getent group docker | cut -d: -f3)
-endif
 
 # HOST_IP regex explanation https://regex101.com/r/GOP2eB/2/f
 HOST_IP ?= $(shell ifconfig \
@@ -61,16 +48,12 @@ ZAP_PORT = 11000
 ZAP_HOST = $(HOST_IP):$(ZAP_PORT)
 ZAP_FAIL_ON_SEVERITY ?= Low
 
-ZAP_LOCAL_SCANNER_CONFIG ?= sm-frontend.json
-ZAP_LOCAL_ALERT_FILTERS ?= set-me-to-path-to-your-local-alert-filters.json
-
 PYTHON_TEST_PATTERN ?= "*_?test.py" # Default to all types of tests
 PYTHON_COVERAGE_MIN = 91 # %
-PYTHON_VERSION := $(shell cat .python-version)
+PYTHON_VERSION := $(shell cat ../.python-version)
 
-.PHONY: shfmt shellcheck pipenv docker-compose
-shfmt shellcheck pipenv docker-compose:
-	# building $@
+.PHONY: pipenv
+pipenv:
 	@docker build \
 		--tag $@ \
 		--build-arg PYTHON_VERSION=$(PYTHON_VERSION) \
@@ -82,36 +65,10 @@ shfmt shellcheck pipenv docker-compose:
 		--target $@ . \
 		>/dev/null
 
-.PHONY: fmt
-fmt: shfmt pipenv
-	@$(DOCKER) shfmt -l -w .
-	@$(DOCKER) pipenv run black --line-length=120 .
-
-.PHONY: fmt-check
-fmt-check: shfmt pipenv md-check
-	@$(DOCKER) shfmt -d .
-	@$(DOCKER) pipenv run black --line-length=120 --check .
-
-.PHONY: md-check
-md-check:
-	@docker pull zemanlx/remark-lint:latest >/dev/null
-	@docker run --rm -i -v $(PWD):/lint/input:ro zemanlx/remark-lint --frail .
-
-.PHONY: static-check
-static-check: shellcheck pipenv
-	@$(DOCKER) shellcheck $(shell git ls-files '/*.sh')
-	@$(DOCKER) pipenv run flake8 --max-line-length=120 --max-complexity=10
-	@$(DOCKER) pipenv run mypy --namespace-packages --strict ./**/*.py
-
-.PHONY: coverage-check
-coverage-check: python-coverage-only
-
 .PHONY: test
 test:
 	@$(MAKE) python-unit-test
 	@$(MAKE) python-integration-test
-	#@$(MAKE) -C docker smoke-test
-	#@$(MAKE) test-local-zap-settings
 
 .PHONY: python-test
 python-test: pipenv
@@ -131,18 +88,6 @@ python-unit-test:
 .PHONY: python-integration-test
 python-integration-test: setup-git-server start-slack-service-stub
 	@$(MAKE) python-test PYTHON_TEST_PATTERN="*_itest.py" PYTHON_TEST_FILE=$(PYTHON_TEST_FILE)
-
-.PHONY: python-coverage-only
-python-coverage-only:
-	@$(DOCKER) pipenv run coverage xml
-	@$(DOCKER) pipenv run coverage report --fail-under $(PYTHON_COVERAGE_MIN)
-
-.PHONY: python-coverage
-python-coverage:
-	-@rm .coverage
-	@$(MAKE) python-unit-test
-	@$(MAKE) python-integration-test
-	@$(MAKE) python-coverage-only
 
 .PHONY: python-test-update-golden-files
 python-test-update-golden-files:
@@ -214,81 +159,3 @@ stop-slack-service-stub:
 	@if [[ "$$(docker ps --filter name=slack-service-stub --quiet)" != "" ]]; then \
 		docker stop slack-service-stub >/dev/null; \
 	fi
-
-target:
-	@mkdir -p target
-
-# Simulates what is happening in DynamicApplicationSecurityTestingJobBuilder in
-# Jenkins before acceptance tests are run
-.PHONY: local-zap-running
-local-zap-running: pipenv target
-	@$(MAKE) -C docker restart ZAP_SAVE_SESSION=false
-	@$(DOCKER) --env ZAP_HOST=$(ZAP_HOST) pipenv run python ./zap/client.py --wait-for-server 60
-	@$(DOCKER) --env ZAP_HOST=$(ZAP_HOST) pipenv run python ./zap/client.py --reset-scanners "./zap/configs/$(ZAP_LOCAL_SCANNER_CONFIG)"
-	@if [[ -f "$(ZAP_LOCAL_ALERT_FILTERS)" ]]; then \
-		cp "$(ZAP_LOCAL_ALERT_FILTERS)" ./target/alert-filters.json; \
-		$(DOCKER) --env ZAP_HOST=$(ZAP_HOST) pipenv run python ./zap/client.py --manage-alerts ./target/alert-filters.json; \
-	fi
-
-# Simulates what is happening in DynamicApplicationSecurityTestingJobBuilder in
-# Jenkins after acceptance tests are run
-.PHONY: local-zap-stop
-local-zap-stop: pipenv
-	@$(DOCKER) --env ZAP_HOST=$(ZAP_HOST) pipenv run python ./zap/client.py --log-proxied-urls
-	@$(DOCKER) --env ZAP_HOST=$(ZAP_HOST) pipenv run python ./zap/client.py --wait-for-report 300 1
-	@$(DOCKER) --env ZAP_HOST=$(ZAP_HOST) pipenv run python ./zap/client.py --generate-report
-	@$(DOCKER) --env ZAP_HOST=$(ZAP_HOST) pipenv run ./zap/client.py --determine-result --fail-on "$(ZAP_FAIL_ON_SEVERITY)" \
-		|| ($(MAKE) -C docker stop && echo  "FAIL: There are findings above $(ZAP_FAIL_ON_SEVERITY) level" && exit 13)
-	@$(MAKE) -C docker stop
-
-.PHONY: test-local-zap-settings
-test-local-zap-settings:
-	$(MAKE) start-git-server
-	@rm -rf ./target
-	$(MAKE) local-zap-running \
-		ZAP_FORWARD_ENABLE=true \
-		ZAP_FORWARD_PORTS=$(GIT_PORT) \
-		ZAP_LOCAL_SCANNER_CONFIG=sm-api.json \
-		ZAP_LOCAL_ALERT_FILTERS="${PWD}/test/fixtures/alert-filters.json"
-
-	@# scanner 10003 is not enabled for API scan
-	@echo -en "Selected scanner config is used: "
-	@curl --silent "http://localhost:$(ZAP_PORT)/JSON/pscan/view/scanners/" \
-		| jq --exit-status '.scanners[] | select(.id=="10003") | .enabled == "false"'
-
-	@# scanner 10021 is set to -1 using alert-filters from test fixtures
-	@echo -en "Alert filters are applied: "
-	@curl --silent "http://localhost:$(ZAP_PORT)/JSON/alertFilter/view/globalAlertFilterList/?contextId=1" \
-		| jq --exit-status '.globalAlertFilterList[] | select(.ruleId=="10021") | .newLevel == "-1"'
-
-	@echo -e "\nIf forwarding is not working curl will get 502 Bad Gateway and fails."
-	@curl --fail --proxy "http://localhost:$(ZAP_PORT)" "localhost:$(GIT_PORT)" >/dev/null
-
-	$(MAKE) local-zap-stop ZAP_FAIL_ON_SEVERITY=High
-	$(MAKE) stop-git-server
-
-	@echo -en "Session file exists: "
-	@test -f target/session/1.session && echo "OK"
-
-	@echo -en "Session archive exists: "
-	@test ! -e target/session/1.tar.xz  && echo "OK"
-
-	@echo -en "DAST report exists: "
-	@test -f target/dast-reports/index.html && echo "OK"
-
-	@echo -en "Proxied URLs report exists: "
-	@test -f target/dast-reports/proxied_urls.log && echo "OK"
-
-.PHONY: start-metrics-service
-start-metrics-service: docker-compose
-	@$(DOCKER) docker-compose \
-		--file test/metrics/docker-compose.yml \
-		up \
-		--force-recreate \
-		--detach
-
-.PHONY: stop-metrics-service
-stop-metrics-service: docker-compose
-	@$(DOCKER) docker-compose \
-		--file test/metrics/docker-compose.yml \
-		down
