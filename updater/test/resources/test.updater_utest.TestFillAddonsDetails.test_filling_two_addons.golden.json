@@ -1,0 +1,24 @@
+[
+  {
+    "name": "ascanrules",
+    "date": "2020-08-04",
+    "file": "ascanrules-release-36.zap",
+    "hash": "SHA-256:7b362e4a7c79b35b9762c804f5b1c04f3c8ac81ca5fd0282e57e2d133df7dce5",
+    "not_before_version": "2.9.0",
+    "status": "release",
+    "url": "https://github.com/zaproxy/zap-extensions/releases/download/ascanrules-v36/ascanrules-release-36.zap",
+    "version": "36",
+    "dependencies": []
+  },
+  {
+    "name": "ascanrulesBeta",
+    "date": "2020-07-23",
+    "file": "ascanrulesBeta-beta-30.zap",
+    "hash": "SHA-256:2515f5b6ae22067f2e2df604367bd5565d0f92a911d45e126dbba45af4b24e7d",
+    "not_before_version": "2.9.0",
+    "status": "beta",
+    "url": "https://github.com/zaproxy/zap-extensions/releases/download/ascanrulesBeta-v30/ascanrulesBeta-beta-30.zap",
+    "version": "30",
+    "dependencies": []
+  }
+]

@@ -1,10 +1,9 @@
 SHELL := /usr/bin/env bash
-PYTHON_VERSION := $(shell cat .python-version)
 ZAP_VERSION = $(shell cat .zap-version)
 DOCKER_OK := $(shell type -P docker)
 ARTIFACTORY_FQDN ?= artefacts.tax.service.gov.uk
 
-.PHONY: check_docker build authenticate_to_artifactory push_image prep_version_incrementor clean help compose
+.PHONY: check_docker build authenticate_to_artifactory push_image prep_version_incrementor test clean help compose
 .DEFAULT_GOAL := help
 
 check_docker:
@@ -35,6 +34,9 @@ prep_version_incrementor:
 clean: ## Remove the docker image
 	@echo '********** Cleaning up ************'
 	@docker rmi -f $$(docker images $(ARTIFACTORY_FQDN)/build-dynamic-application-security-testing:$$(cat .version) -q)
+
+test: ## Run tests for additional scripts
+	@$(MAKE) -C updater test
 
 help:
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'

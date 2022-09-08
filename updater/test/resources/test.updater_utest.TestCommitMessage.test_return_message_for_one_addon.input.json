@@ -1,0 +1,13 @@
+[
+  {
+    "name": "ascanrules",
+    "date": "2020-08-04",
+    "file": "ascanrules-release-36.zap",
+    "hash": "SHA-256:7b362e4a7c79b35b9762c804f5b1c04f3c8ac81ca5fd0282e57e2d133df7dce5",
+    "not_before_version": "2.9.0",
+    "status": "release",
+    "url": "https://github.com/zaproxy/zap-extensions/releases/download/ascanrules-v36/ascanrules-release-36.zap",
+    "version": "36",
+    "dependencies": []
+  }
+]

@@ -292,7 +292,7 @@ def clone_fork() -> str:
 
 
 def copy_zap_dockerfile_into_fork(dockerfile_path: str, fork_path: str) -> str:
-    dest = os.path.join(fork_path, "docker", os.path.basename(dockerfile_path))
+    dest = os.path.join(fork_path, os.path.basename(dockerfile_path))
     try:
         os.chdir(fork_path)
         shutil.copyfile(dockerfile_path, dest)
@@ -462,11 +462,13 @@ def commit_message(addons: List[Addon]) -> str:
 
 
 def get_zap_version(version_file_path: str) -> str:
-    with open(version_file_path) as version_file:
-        version_line = version_file.readline()
-    version = version_line.strip().split(".")
-    return f"{version[0]}.{version[1]}"  # major.minor
-
+    try:
+        with open(version_file_path) as version_file:
+            version_line = version_file.readline()
+        version = version_line.strip().split(".")
+        return f"{version[0]}.{version[1]}"  # major.minor
+    except FileNotFoundError:
+        return f"2.11"
 
 if __name__ == "__main__":
     # get absolute path to this script for walking this repo
