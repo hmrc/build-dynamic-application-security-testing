@@ -1,0 +1,29 @@
+[
+  {
+    "name": "pscanrules",
+    "date": "2020-06-02",
+    "file": "pscanrules-release-29.zap",
+    "hash": "SHA-256:75fa277ab95edc996a07647d612a28e9bd41ffb51de50c05dcfff851cfeb43d8",
+    "not_before_version": "2.9.0",
+    "status": "release",
+    "url": "https://github.com/zaproxy/zap-extensions/releases/download/pscanrules-v29/pscanrules-release-29.zap",
+    "version": "29",
+    "dependencies": [
+      {
+        "id": "commonlib",
+        "version": ""
+      }
+    ]
+  },
+  {
+    "name": "commonlib",
+    "date": "2020-08-04",
+    "file": "commonlib-release-1.1.0.zap",
+    "hash": "SHA-256:6ae8ce3c51b425f48822a146fe0e5933f559f2343aefe7b078b0c8c7eb254542",
+    "not_before_version": "2.9.0",
+    "status": "release",
+    "url": "https://github.com/zaproxy/zap-extensions/releases/download/commonlib-v1.1.0/commonlib-release-1.1.0.zap",
+    "version": "1.1.0",
+    "dependencies": []
+  }
+]

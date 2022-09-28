@@ -1,0 +1,29 @@
+[
+  {
+    "name": "domxss",
+    "date": "2019-06-12",
+    "file": "domxss-alpha-9.zap",
+    "hash": "SHA-256:069505357e4b18ffa1bc47ae2ea10fd3ddd5845b5e94b3edaefee9eb2dede254",
+    "not_before_version": "2.7.0",
+    "status": "alpha",
+    "url": "https://github.com/zaproxy/zap-extensions/releases/download/domxss-v9/domxss-alpha-9.zap",
+    "version": "9",
+    "dependencies": [
+      {
+        "id": "selenium",
+        "version": "15.*"
+      }
+    ]
+  },
+  {
+    "name": "selenium",
+    "date": "2020-03-31",
+    "file": "selenium-release-15.2.0.zap",
+    "hash": "SHA-256:9d3ee836b05eb0ab47c3b6c793a3840ccb3d0297f310d3598cb74a8e924f4b43",
+    "not_before_version": "2.9.0",
+    "status": "release",
+    "url": "https://github.com/zaproxy/zap-extensions/releases/download/selenium-v15.2.0/selenium-release-15.2.0.zap",
+    "version": "15.2.0",
+    "dependencies": []
+  }
+]

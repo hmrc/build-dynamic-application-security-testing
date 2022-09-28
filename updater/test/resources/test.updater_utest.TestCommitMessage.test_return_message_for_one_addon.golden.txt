@@ -1,0 +1,6 @@
+Update ZAP addons from upstream
+
+- ascanrules:
+  - version: 36
+  - status: release
+  - released: 2020-08-04

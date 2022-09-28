@@ -1,0 +1,10 @@
+{
+  "request": {
+    "method": "POST",
+    "url": "/slack-notifications/notification"
+  },
+  "response": {
+    "status": 200,
+    "bodyFileName": "slack_service_success_response.json"
+  }
+}
