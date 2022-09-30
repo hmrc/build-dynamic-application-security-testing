@@ -643,7 +643,9 @@ class TestPushChanges(unittest.TestCase):
         mock_run.return_value = subprocess.CompletedProcess(
             args=want_args,
             returncode=1,
-            stdout="error: failed to push some refs to 'github.com:hmrc/build-dynamic-application-security-testing.git'".encode("utf-8"),
+            stdout="error: failed to push some refs to 'github.com:hmrc/build-dynamic-application-security-testing.git'".encode(
+                "utf-8"
+            ),
         )
 
         with patch("subprocess.run", mock_run):

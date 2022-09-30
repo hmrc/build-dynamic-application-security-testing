@@ -12,6 +12,7 @@ from base64 import b64encode
 
 from updater import main
 
+
 class TestMain(unittest.TestCase):
     maxDiff = None
     web_server_port = random.randint(10000, 65535)
@@ -30,10 +31,10 @@ class TestMain(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls) -> None:
-        #run_command("make setup-git-server", "Could not start & setup git server")
+        # run_command("make setup-git-server", "Could not start & setup git server")
         os.environ["GIT_HMRC_USER_API_TOKEN"] = get_git_hmrc_user_token()
         os.environ["GITHUB_API_TOKEN"] = get_git_readonly_user_token()
-        #run_command("make start-slack-service-stub", "Could not start Slack server stub")
+        # run_command("make start-slack-service-stub", "Could not start Slack server stub")
         # give web_server time to boot up
         time.sleep(0.5)
 
@@ -149,7 +150,8 @@ def get_git_readonly_user_token() -> str:
 
 def get_git_token(user: str) -> str:
     basic_credentials = b64encode(f"{user}:{user}".encode("utf-8")).decode("utf-8")
-    return str(requests.post(
+    return str(
+        requests.post(
             url=f"http://{os.getenv('GIT_HOST')}/api/v1/users/{user}/tokens",
             headers={
                 "Content-Type": "application/json",
@@ -159,6 +161,7 @@ def get_git_token(user: str) -> str:
             json={"name": "token_name"},
         ).json()["sha1"]
     )
+
 
 def update_file(test: TestMain, kind: str, extension: str, content: str) -> None:
     target_file = f"{test.main_directory}/test/resources/{unittest.TestCase.id(test)}.{kind}.{extension}"
@@ -231,6 +234,7 @@ def copy_repo_to_test_dir(test: TestMain) -> None:
         f"{test.main_directory}/test/resources/{unittest.TestCase.id(test)}.input.Dockerfile",
         os.path.join(test.test_directory, "build-dynamic-application-security-testing", "Dockerfile"),
     )
+
 
 def configure_git_user(user: str, token: str) -> None:
     with open(f"{os.getenv('HOME')}/.git-credentials", "w") as file:
