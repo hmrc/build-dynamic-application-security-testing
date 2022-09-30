@@ -72,6 +72,7 @@ smoke-test: start
 .PHONY: start
 start: build-local session-dir
 	@echo -n "Removing old $(ZAP_CONTAINER_NAME) container: "
+	-@docker stop $(ZAP_CONTAINER_NAME) >/dev/null
 	-@docker rm $(ZAP_CONTAINER_NAME) >/dev/null && echo "Done"
 	@echo -n "Starting Docker container: "
 	@docker run \
