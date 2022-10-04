@@ -31,10 +31,8 @@ class TestMain(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls) -> None:
-        # run_command("make setup-git-server", "Could not start & setup git server")
         os.environ["GIT_HMRC_USER_API_TOKEN"] = get_git_hmrc_user_token()
         os.environ["GITHUB_API_TOKEN"] = get_git_readonly_user_token()
-        # run_command("make start-slack-service-stub", "Could not start Slack server stub")
         # give web_server time to boot up
         time.sleep(0.5)
 
