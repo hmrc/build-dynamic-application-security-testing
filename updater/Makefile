@@ -52,7 +52,7 @@ PYTHON_TEST_PATTERN ?= "*_?test.py" # Default to all types of tests
 PYTHON_COVERAGE_MIN = 91 # %
 PYTHON_VERSION := $(shell cat ../.python-version)
 
-.PHONY: pipenv
+.PHONY: shfmt pipenv
 pipenv:
 	@docker build \
 		--tag $@ \
@@ -159,3 +159,16 @@ stop-slack-service-stub:
 	@if [[ "$$(docker ps --filter name=slack-service-stub --quiet)" != "" ]]; then \
 		docker stop slack-service-stub >/dev/null; \
 	fi
+
+.PHONY: fmt
+fmt: shfmt pipenv
+	@$(DOCKER) shfmt -l -w .
+	@$(DOCKER) pipenv run black --line-length=120 .
+
+.PHONY: coverage-check
+coverage-check: python-coverage-only
+
+.PHONY: python-coverage-only
+python-coverage-only:
+	@$(DOCKER) pipenv run coverage xml
+	@$(DOCKER) pipenv run coverage report --fail-under $(PYTHON_COVERAGE_MIN)

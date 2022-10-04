@@ -101,7 +101,9 @@ class PullRequest:
     head: str
     body: str
     base: str = "main"
-    api_create_url: str = os.getenv("GIT_API_PR_URL", "https://api.github.com/repos/hmrc/build-dynamic-application-security-testing/pulls")
+    api_create_url: str = os.getenv(
+        "GIT_API_PR_URL", "https://api.github.com/repos/hmrc/build-dynamic-application-security-testing/pulls"
+    )
     url: str = ""
 
     def payload(self) -> Dict[str, str]:
@@ -240,7 +242,9 @@ def create_fork() -> None:
     Forking a Repository happens asynchronously. You may have to wait a short period of time before you can access
     the git objects. It shouldn't take longer than 5 minutes.
     """
-    create_fork_url = os.getenv("GIT_API_FORK_URL", "https://api.github.com/repos/hmrc/build-dynamic-application-security-testing/forks")
+    create_fork_url = os.getenv(
+        "GIT_API_FORK_URL", "https://api.github.com/repos/hmrc/build-dynamic-application-security-testing/forks"
+    )
     try:
         requests.post(url=create_fork_url, headers=build_github_headers()).raise_for_status()
         for attempt in range(15):
@@ -254,7 +258,9 @@ def create_fork() -> None:
 
 
 def get_fork() -> Dict[Any, Any]:
-    list_forks_url = os.getenv("GIT_API_FORK_URL", "https://api.github.com/repos/hmrc/build-dynamic-application-security-testing/forks")
+    list_forks_url = os.getenv(
+        "GIT_API_FORK_URL", "https://api.github.com/repos/hmrc/build-dynamic-application-security-testing/forks"
+    )
     forks = requests.get(url=list_forks_url, headers=build_github_headers()).json()
     filtered_forks = filter(lambda fork: fork["owner"]["login"] == getenv_or_raise("GITHUB_API_USER"), forks)
     try:
@@ -469,6 +475,7 @@ def get_zap_version(version_file_path: str) -> str:
         return f"{version[0]}.{version[1]}"  # major.minor
     except FileNotFoundError:
         return f"2.11"
+
 
 if __name__ == "__main__":
     # get absolute path to this script for walking this repo
