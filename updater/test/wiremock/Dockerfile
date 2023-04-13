@@ -1,2 +1,2 @@
-FROM rodolpheche/wiremock:2.27.2-alpine
+FROM wiremock/wiremock:2.35.0
 COPY stubs /home/wiremock
