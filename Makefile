@@ -33,7 +33,7 @@ check_docker:
 build: check_docker prep_version_incrementor ## Build the docker image
 	@echo '********** Building docker image ************'
 	@prepare-release
-	@docker build --build-arg ZAP_VERSION=$(ZAP_VERSION) --tag $(ARTIFACTORY_FQDN)/build-dynamic-application-security-testing:$$(cat .version) .
+	@docker buildx build --platform linux/arm64,linux/amd64 --build-arg ZAP_VERSION=$(ZAP_VERSION) --tag $(ARTIFACTORY_FQDN)/build-dynamic-application-security-testing:$$(cat .version) .
 
 authenticate_to_artifactory:
 	@docker login --username ${ARTIFACTORY_USERNAME} --password "${ARTIFACTORY_PASSWORD}" $(ARTIFACTORY_FQDN)
