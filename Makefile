@@ -16,7 +16,7 @@ ZAP_STORAGE_SESSIONS_HOST = httpbin.org/anything
 ZAP_STORAGE_SESSIONS_API_KEY = APIKeyExampleTxcYRDgKEpu2vcYyT
 ZAP_HOME = /home/zap/.ZAP
 ZAP_IMAGE_LOCAL_TAG = build-dynamic-application-security-testing:local
-TEST_WAIT_THRESHOLD = 20
+TEST_WAIT_THRESHOLD = 60
 PARENT_DIR := $(shell dirname ${PWD})
 HOST_IP ?= $(shell ifconfig \
 	| grep -m 1 -oE "inet (10\.[0-9]+|172\.(1[6-9]|2[0-9]|3[01])|192\.168)\.[0-9]+\.[0-9]+" \
@@ -33,7 +33,7 @@ check_docker:
 build: check_docker prep_version_incrementor ## Build the docker image
 	@echo '********** Building docker image ************'
 	@prepare-release
-	@docker build --build-arg ZAP_VERSION=$(ZAP_VERSION) --tag $(ARTIFACTORY_FQDN)/build-dynamic-application-security-testing:$$(cat .version) .
+	@docker buildx build --platform linux/arm64,linux/amd64 --build-arg ZAP_VERSION=$(ZAP_VERSION) --tag $(ARTIFACTORY_FQDN)/build-dynamic-application-security-testing:$$(cat .version) .
 
 authenticate_to_artifactory:
 	@docker login --username ${ARTIFACTORY_USERNAME} --password "${ARTIFACTORY_PASSWORD}" $(ARTIFACTORY_FQDN)
