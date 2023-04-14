@@ -67,12 +67,12 @@ pipenv:
 
 .PHONY: test
 test:
-	$(MAKE) python-unit-test
-	$(MAKE) python-integration-test
+	@$(MAKE) python-unit-test
+	@$(MAKE) python-integration-test
 
 .PHONY: python-test
 python-test: pipenv
-	$(DOCKER) pipenv run coverage run \
+	@$(DOCKER) pipenv run coverage run \
 		--append \
 		--branch \
 		--omit "*_?test.py,*/.local/*" \
@@ -83,11 +83,11 @@ python-test: pipenv
 
 .PHONY: python-unit-test
 python-unit-test:
-	$(MAKE) python-test PYTHON_TEST_PATTERN="*_utest.py" PYTHON_TEST_FILE=$(PYTHON_TEST_FILE)
+	@$(MAKE) python-test PYTHON_TEST_PATTERN="*_utest.py" PYTHON_TEST_FILE=$(PYTHON_TEST_FILE)
 
 .PHONY: python-integration-test
 python-integration-test: setup-git-server start-slack-service-stub
-	$(MAKE) python-test PYTHON_TEST_PATTERN="*_itest.py" PYTHON_TEST_FILE=$(PYTHON_TEST_FILE)
+	@$(MAKE) python-test PYTHON_TEST_PATTERN="*_itest.py" PYTHON_TEST_FILE=$(PYTHON_TEST_FILE)
 
 .PHONY: python-test-update-golden-files
 python-test-update-golden-files:

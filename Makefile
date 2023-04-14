@@ -55,16 +55,16 @@ clean: ## Remove the docker image
 	@docker rmi -f $$(docker images $(ARTIFACTORY_FQDN)/build-dynamic-application-security-testing:$$(cat .version) -q)
 
 test: ## Run tests
-	$(MAKE) -C updater test
-	$(MAKE) smoke-test
+	@$(MAKE) -C updater test
+	@$(MAKE) smoke-test
 
 help:
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
 
 .PHONY: smoke-test
 smoke-test: start
-	$(MAKE) stop
-	if [[ $$(docker inspect $(ZAP_CONTAINER_NAME) --format='{{.State.ExitCode}}') -ne 0 ]]; then \
+	@$(MAKE) stop
+	@if [[ $$(docker inspect $(ZAP_CONTAINER_NAME) --format='{{.State.ExitCode}}') -ne 0 ]]; then \
 		docker logs $(ZAP_CONTAINER_NAME); \
 		exit 1; \
 	fi
@@ -126,10 +126,10 @@ session-dir:
 
 .PHONY: stop
 stop:
-	echo -n "Stopping via API call: "
+	@echo -n "Stopping via API call: "
 	-@curl --fail "http://$(ZAP_HOST)/JSON/core/action/shutdown/"
-	echo -en "\nWaiting for Docker container to stop: "
-	for i in {1..$(TEST_WAIT_THRESHOLD)}; do \
+	@echo -en "\nWaiting for Docker container to stop: "
+	@for i in {1..$(TEST_WAIT_THRESHOLD)}; do \
 		if [[ -z "$$(docker ps --quiet --filter "name=$(ZAP_CONTAINER_NAME)")" ]]; then \
 			break; \
 		fi; \
@@ -142,4 +142,4 @@ stop:
 		sleep 1; \
 		echo -n "."; \
 	done
-	echo " Done"
+	@echo " Done"
