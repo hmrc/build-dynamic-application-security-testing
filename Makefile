@@ -71,11 +71,11 @@ smoke-test: start
 
 .PHONY: start
 start: build-local session-dir
-	@echo -n "Removing old $(ZAP_CONTAINER_NAME) container: "
+	echo -n "Removing old $(ZAP_CONTAINER_NAME) container: "
 	-@docker stop $(ZAP_CONTAINER_NAME) >/dev/null
 	-@docker rm $(ZAP_CONTAINER_NAME) >/dev/null && echo "Done"
-	@echo -n "Starting Docker container: "
-	@docker run \
+	echo -n "Starting Docker container: "
+	docker run \
 		--user zap \
 		--env "HOST_IP=$(HOST_IP)" \
 		--env "ZAP_FORWARD_ENABLE=$(ZAP_FORWARD_ENABLE)" \
@@ -93,8 +93,8 @@ start: build-local session-dir
 		$(ZAP_IMAGE_LOCAL_TAG) \
 	>/dev/null \
 	&& echo "Done"
-	@echo -n "Waiting for ZAP API to be online: "
-	@for i in {1..$(TEST_WAIT_THRESHOLD)}; do \
+	echo -n "Waiting for ZAP API to be online: "
+	for i in {1..$(TEST_WAIT_THRESHOLD)}; do \
 		if curl --fail --silent "http://$(ZAP_HOST)/JSON/core/view/version/?" >/dev/null; then \
 			break; \
 		fi; \
@@ -107,11 +107,11 @@ start: build-local session-dir
 		sleep 1; \
 		echo -n "."; \
 	done
-	@echo -e " Done\nZAP is listening on http://$(ZAP_HOST)"
+	echo -e " Done\nZAP is listening on http://$(ZAP_HOST)"
 
 .PHONY: build-local
 build-local:
-	@docker build \
+	docker build \
 		--quiet \
 		--build-arg ZAP_VERSION=$(ZAP_VERSION) \
 		--tag $(ZAP_IMAGE_LOCAL_TAG) \
