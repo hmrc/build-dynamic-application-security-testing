@@ -33,18 +33,17 @@ check_docker:
 build: check_docker prep_version_incrementor ## Build the docker image
 	@echo '********** Building docker image ************'
 	@prepare-release
-	@docker buildx build --platform linux/arm64,linux/amd64 --build-arg ZAP_VERSION=$(ZAP_VERSION) --tag $(ARTIFACTORY_FQDN)/build-dynamic-application-security-testing:$$(cat .version) .
+	@docker buildx build --platform linux/arm64,linux/amd64 --build-arg ZAP_VERSION=$(ZAP_VERSION) --tag $(ARTIFACTORY_FQDN)/build-dynamic-application-security-testing:$$(cat .version) docker-image
 
 authenticate_to_artifactory:
 	@docker login --username ${ARTIFACTORY_USERNAME} --password "${ARTIFACTORY_PASSWORD}" $(ARTIFACTORY_FQDN)
 
 push_image: ## Push the docker image to artifactory
-	@docker push $(ARTIFACTORY_FQDN)/build-dynamic-application-security-testing:$$(cat .version)
+	@docker buildx build --push --platform linux/arm64,linux/amd64 --build-arg ZAP_VERSION=$(ZAP_VERSION) --tag $(ARTIFACTORY_FQDN)/build-dynamic-application-security-testing:$$(cat .version) docker-image
 	@cut-release
 
 push_latest: ## Push the latest tag to artifactory
-	@docker tag $(ARTIFACTORY_FQDN)/build-dynamic-application-security-testing:$$(cat .version) $(ARTIFACTORY_FQDN)/build-dynamic-application-security-testing:latest
-	@docker push $(ARTIFACTORY_FQDN)/build-dynamic-application-security-testing:latest
+	@docker buildx build --push --platform linux/arm64,linux/amd64 --build-arg ZAP_VERSION=$(ZAP_VERSION) --tag $(ARTIFACTORY_FQDN)/build-dynamic-application-security-testing:latest docker-image
 
 prep_version_incrementor:
 	@echo "Installing version-incrementor"
