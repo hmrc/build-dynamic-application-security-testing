@@ -1,7 +1,7 @@
 ARG PYTHON_VERSION
 
 FROM python:${PYTHON_VERSION}-alpine AS pipenv
-RUN apk add --no-cache shadow~=4.8
+RUN apk add --no-cache shadow~=4.13
 # UID of current user who runs the build
 ARG user_id
 # GID of current user who runs the build
@@ -34,11 +34,11 @@ RUN groupmod -g 64 dialout \
     fi \
     && chown -R builder:union "${workdir}"
 RUN apk add --no-cache \
-    bash=~5.1 \
-    curl=~7.79 \
+    bash=~5.2.15 \
+    curl=~8.0.1 \
     docker~=20.10 \
-    gcc~=10.2 \
-    git~=2.30 \
+    gcc~=12.2 \
+    git~=2.38 \
     libc-dev~=0.7 \
     make=~4.3 \
     && pip install --no-cache-dir pipenv==2020.8.13
