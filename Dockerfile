@@ -10,6 +10,11 @@ ENV ZAP_FORWARD_ENABLE="false"
 
 USER root
 
+RUN sed -i 's/http:/https:/g' /etc/apt/sources.list
+
+RUN echo 'Acquire::https::Verify-Peer "false";' >/etc/apt/apt.conf.d/80-ignore-tls
+RUN apt-get update && apt-get install -y ca-certificates && rm -f /etc/apt/apt.conf.d/80-ignore-tls
+
 RUN apt-get update \
     && apt-get install --no-install-recommends -y \
         jq=1.6* \
