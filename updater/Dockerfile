@@ -40,7 +40,7 @@ RUN apk add --no-cache \
     git~=2.40.1-r0 \
     libc-dev~=0.7 \
     make=~4.4.1-r1 \
-    && pip install --no-cache-dir pipenv==2020.8.13
+    && pip install --no-cache-dir --index-url https://artefacts.tax.service.gov.uk/artifactory/api/pypi/pips/simple pipenv==2020.8.13
 USER builder
 COPY --chown=builder:union Pipfile Pipfile.lock ./
 RUN pipenv install --ignore-pipfile --dev
