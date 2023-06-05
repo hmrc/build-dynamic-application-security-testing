@@ -10,7 +10,7 @@
         "sources": [
             {
                 "name": "pypi",
-                "url": "https://pypi.org/simple",
+                "url": "https://artefacts.tax.service.gov.uk/artifactory/api/pypi/pips/simple",
                 "verify_ssl": true
             }
         ]

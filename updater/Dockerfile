@@ -35,12 +35,11 @@ RUN groupmod -g 64 dialout \
     && chown -R builder:union "${workdir}"
 RUN apk add --no-cache \
     bash=~5.2.15 \
-    curl=~8.0.1 \
-    docker~=20.10 \
+    docker~=23.0.6-r2 \
     gcc~=12.2 \
-    git~=2.38 \
+    git~=2.40.1-r0 \
     libc-dev~=0.7 \
-    make=~4.3 \
+    make=~4.4.1-r1 \
     && pip install --no-cache-dir pipenv==2020.8.13
 USER builder
 COPY --chown=builder:union Pipfile Pipfile.lock ./
