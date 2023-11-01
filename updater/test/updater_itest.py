@@ -216,11 +216,12 @@ def assert_no_pull_request(self: TestMain) -> None:
 
 def slack_notification_sent(want_pr_title: str) -> bool:
     notifications = requests.get(f"http://{os.getenv('SLACK_HOST')}/__admin/requests").json()["requests"]
-    return want_pr_title in [
-        attachment["title"]
-        for notification in notifications
-        for attachment in json.loads(notification["request"]["body"])["messageDetails"]["attachments"]
-    ]
+
+    for notification in notifications:
+        blocks = json.loads(notification["request"]["body"])["blocks"]
+        if want_pr_title in str(blocks):
+            return True
+    return False
 
 
 def copy_repo_to_test_dir(test: TestMain) -> None:

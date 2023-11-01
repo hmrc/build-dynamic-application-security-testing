@@ -35,7 +35,7 @@ RUN groupmod -g 64 dialout \
     && chown -R builder:union "${workdir}"
 RUN apk add --no-cache \
     bash=~5.2.15 \
-    docker~=23.0.6-r5 \
+    docker~=23.0.6-r6 \
     gcc~=12.2 \
     git~=2.40.1-r0 \
     libc-dev~=0.7 \

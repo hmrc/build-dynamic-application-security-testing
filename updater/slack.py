@@ -6,60 +6,48 @@ import requests
 
 
 class Notifier:
-    def __init__(self, *channels: str):
+    def __init__(self, *channels: str, display: str, emoji: str):
         self._channels = list(channels) or self._missing_config("Slack channels target")
-        self._user = os.getenv("SLACK_USER") or self._missing_config("SLACK_USER environment variable")
-        self._token = os.getenv("SLACK_TOKEN") or self._missing_config("SLACK_TOKEN environment variable")
+        self._display = display
+        self._emoji = emoji
+        self._token = os.getenv("INTERNAL_AUTH_TOKEN") or self._missing_config("INTERNAL_AUTH_TOKEN environment variable")
         self._url = (
             os.getenv("SLACK_NOTIFICATION_URL")
-            or "https://slack-notifications.tax.service.gov.uk/slack-notifications/notification"
+            or "https://slack-notifications.tax.service.gov.uk/slack-notifications/v2/notification"
         )
 
-    def send_info(self, header: str, title: str, text: str) -> None:
-        self.send_message(header, title, text, "#36a64f")
-
-    def send_error(self, header: str, title: str, text: str) -> None:
-        self.send_message(header, title, text, "#ff4d4d")
-
-    def send_message(self, header: str, title: str, text: str, color: str) -> None:
+    def send_message(self, text: str, blocks: List[Dict[str, Any]]) -> None:
         try:
-            self._handle_response(self._send(header, title, text, color))
+            self._handle_response(self._send(text, blocks))
         except requests.RequestException as err:
             raise SendSlackMessageException(self._url, self._channels, str(err)) from None
 
     def _missing_config(self, config: str) -> Any:
         raise MissingConfigException(config)
 
-    def _send(self, header: str, title: str, text: str, color: str) -> Dict[str, Any]:
+    def _send(self, text: str, blocks: List[Dict[str, Any]]) -> Dict[str, Any]:
         response = requests.post(
             url=self._url,
             headers=self._build_headers(),
-            json=self._build_payload(header, title, text, color),
+            json=self._build_payload(text, blocks),
             timeout=10,
         )
         response.raise_for_status()
         return dict(response.json())
 
     def _build_headers(self) -> Dict[str, str]:
-        credentials = b64encode(f"{self._user}:{self._token}".encode("utf-8")).decode("utf-8")
-        return {"Content-Type": "application/json", "Authorization": f"Basic {credentials}"}
+        return {"Content-Type": "application/json", "Authorization": self._token}
 
-    def _build_payload(self, header: str, title: str, text: str, color: str) -> Dict[str, Any]:
+    def _build_payload(self, text: str, blocks: List[Dict[str, Any]]) -> Dict[str, Any]:
         return {
             "channelLookup": {
                 "by": "slack-channel",
                 "slackChannels": self._channels,
             },
-            "messageDetails": {
-                "text": header,
-                "attachments": [
-                    {
-                        "color": color,
-                        "title": title,
-                        "text": text,
-                    }
-                ],
-            },
+            "displayName": self._display,
+            "emoji": self._emoji,
+            "text": text,
+            "blocks": blocks
         }
 
     def _handle_response(self, response: Dict[str, Any]) -> None:
