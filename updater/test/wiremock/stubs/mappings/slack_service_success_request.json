@@ -1,7 +1,7 @@
 {
   "request": {
     "method": "POST",
-    "url": "/slack-notifications/notification"
+    "url": "/slack-notifications/v2/notification"
   },
   "response": {
     "status": 200,

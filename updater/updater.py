@@ -125,7 +125,16 @@ def main(zap_addons_path: str, dockerfile_path: str, xml_url: str, publish: bool
 
     if needs_publishing & publish:
         pr = publish_changes(dockerfile_path, commit_message(addons))
-        slack.Notifier("team-platops-alerts").send_info(":owasp-zap: ZAP addons update", pr.title, pr.url)
+        blocks = [
+            {
+                "type": "section",
+                "text": {
+                    "type": "mrkdwn",
+                    "text": f"{pr.title} - <{pr.url}|Pull Request>"
+                }
+            }
+        ]
+        slack.Notifier("team-platops-alerts", display="DAST Addons Updater", emoji=":owasp-zap:").send_message("ZAP addons update", blocks)
 
 
 def publish_changes(dockerfile_path: str, pr_message: str) -> PullRequest:
