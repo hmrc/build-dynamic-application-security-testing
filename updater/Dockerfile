@@ -1,7 +1,7 @@
 ARG PYTHON_VERSION
 
 FROM python:${PYTHON_VERSION}-alpine AS pipenv
-RUN apk add --no-cache shadow~=4.13
+RUN apk add --no-cache shadow~=4.14
 # UID of current user who runs the build
 ARG user_id
 # GID of current user who runs the build
@@ -34,12 +34,12 @@ RUN groupmod -g 64 dialout \
     fi \
     && chown -R builder:union "${workdir}"
 RUN apk add --no-cache \
-    bash=~5.2.15 \
-    docker~=23.0.6-r6 \
-    gcc~=12.2 \
-    git~=2.40.1-r0 \
+    bash=~5.2.21 \
+    docker~=24.0.7 \
+    gcc~=13.2.1 \
+    git~=2.43.0 \
     libc-dev~=0.7 \
-    make=~4.4.1-r1 \
+    make=~4.4.1 \
     && pip install --no-cache-dir --index-url https://artefacts.tax.service.gov.uk/artifactory/api/pypi/pips/simple pipenv==2020.8.13
 USER builder
 COPY --chown=builder:union Pipfile Pipfile.lock ./
