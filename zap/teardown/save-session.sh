@@ -59,7 +59,7 @@ upload_file() {
     local file_name
     file_name="$(basename "${file_path}")"
 
-    timeout 300 curl \
+    timeout 600 curl \
         --silent \
         --show-error \
         --fail \
