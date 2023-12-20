@@ -7,7 +7,7 @@
 set -o errexit  # Exit immediately if any command or pipeline of commands fails
 set -o nounset  # Treat unset variables and parameters as an error
 set -o pipefail # Exit when command before pipe fails
-set -o xtrace   # Debug mode expand everything and print it before execution
+# set -o xtrace   # Debug mode expand everything and print it before execution
 
 cd "$(dirname "$0")" # Always run from script location
 
@@ -77,8 +77,6 @@ main() {
         return
     fi
 
-    echo "ZAP_SAVE_SESSION = true" # TODO remove
-
     # Check that all required variables are set.
     REQUIRED_VARS=(
         ZAP_BUILD_NUMBER
@@ -92,9 +90,6 @@ main() {
             error "variable ${variable_name} is empty"
         fi
     done
-
-    echo "All env vars are present" # TODO remove
-    ls -lh "${ZAP_HOME}/session" # TODO remove
 
     local archive_path
     archive_path=$(create_session_archive "${ZAP_HOME}/session" "${ZAP_BUILD_NUMBER}")
