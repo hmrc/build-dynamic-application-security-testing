@@ -63,7 +63,7 @@ upload_file() {
         --silent \
         --show-error \
         --fail \
-        --header "X-JFrog-Art-Api:${ZAP_STORAGE_SESSIONS_API_KEY}" \
+        --header "Authorization: Bearer ${ZAP_STORAGE_SESSIONS_API_KEY}" \
         --request PUT \
         --upload-file "${file_path}" \
         "${upload_url}/${file_name}"
