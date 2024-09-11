@@ -1,5 +1,5 @@
 ARG ZAP_VERSION
-FROM owasp/zap2docker-stable:${ZAP_VERSION}
+FROM zaproxy/zap-stable:${ZAP_VERSION}
 
 ENV ZAP_STORAGE_SESSIONS_HOST="artefacts.tax.service.gov.uk"
 ENV ZAP_STORAGE_SESSIONS_API_KEY=""
