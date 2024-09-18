@@ -37,7 +37,7 @@ RUN apk add --no-cache \
     bash=~5.2.21 \
     docker~=25.0.5-r1 \
     gcc~=13.2.1 \
-    git~=2.43.4-r0 \
+    git~=2.43.5-r0 \
     libc-dev~=0.7 \
     make=~4.4.1 \
     && pip install --no-cache-dir --index-url https://artefacts.tax.service.gov.uk/artifactory/api/pypi/pips/simple pipenv==2020.8.13
