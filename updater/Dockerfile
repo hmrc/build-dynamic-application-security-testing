@@ -1,7 +1,7 @@
 ARG PYTHON_VERSION
 
 FROM python:${PYTHON_VERSION}-alpine AS pipenv
-RUN apk add --no-cache shadow~=4.14
+RUN apk add --no-cache shadow~=4.15.1-r0
 # UID of current user who runs the build
 ARG user_id
 # GID of current user who runs the build
