@@ -1,6 +1,7 @@
 ARG PYTHON_VERSION
+ARG DOCKERHUB=dockerhub.tax.service.gov.uk
 
-FROM python:${PYTHON_VERSION}-alpine AS pipenv
+FROM ${DOCKERHUB}/python:${PYTHON_VERSION}-alpine AS pipenv
 RUN apk add --no-cache shadow~=4.15.1-r0
 # UID of current user who runs the build
 ARG user_id
@@ -37,7 +38,7 @@ RUN apk add --no-cache \
     bash=~5.2.26-r0 \
     docker~=26.1.5-r0 \
     gcc~=13.2.1 \
-    git~=2.45.2-r0 \
+    git~=2.45.4-r0 \
     musl-dev \
     make=~4.4.1 \
     && pip install --no-cache-dir --index-url https://artefacts.tax.service.gov.uk/artifactory/api/pypi/pips/simple pipenv==2024.1.0

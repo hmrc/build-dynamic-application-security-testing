@@ -1,5 +1,6 @@
 ARG ZAP_VERSION
-FROM zaproxy/zap-stable:${ZAP_VERSION}
+ARG DOCKERHUB=dockerhub.tax.service.gov.uk
+FROM ${DOCKERHUB}/zaproxy/zap-stable:${ZAP_VERSION}
 
 ENV ZAP_STORAGE_SESSIONS_HOST="artefacts.tax.service.gov.uk"
 ENV ZAP_STORAGE_SESSIONS_API_KEY=""
