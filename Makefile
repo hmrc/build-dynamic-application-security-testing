@@ -16,6 +16,8 @@ ZAP_STORAGE_SESSIONS_HOST = httpbin.org/anything
 ZAP_STORAGE_SESSIONS_API_KEY = APIKeyExampleTxcYRDgKEpu2vcYyT
 ZAP_HOME = /home/zap/.ZAP
 ZAP_IMAGE_LOCAL_TAG = build-dynamic-application-security-testing:local
+BASE_IMAGE_NAME = build-dynamic-application-security-testing-base
+BASE_IMAGE_LOCAL_TAG = $(BASE_IMAGE_NAME):local
 TEST_WAIT_THRESHOLD = 60
 PARENT_DIR := $(shell dirname ${PWD})
 HOST_IP ?= $(shell ifconfig \
@@ -33,17 +35,28 @@ check_docker:
 build: check_docker prep_version_incrementor ## Build the docker image
 	@echo '********** Building docker image ************'
 	@prepare-release
-	@docker buildx build --platform linux/arm64,linux/amd64 --build-arg ZAP_VERSION=$(ZAP_VERSION) --tag $(ARTIFACTORY_FQDN)/build-dynamic-application-security-testing:$$(cat .version) .
+	@docker buildx build --platform linux/arm64,linux/amd64 \
+		--build-arg ZAP_VERSION=$(ZAP_VERSION) \
+		--build-arg BASE_IMAGE=$(ARTIFACTORY_FQDN)/$(BASE_IMAGE_NAME):$(ZAP_VERSION) \
+		--tag $(ARTIFACTORY_FQDN)/build-dynamic-application-security-testing:$$(cat .version) .
 
 authenticate_to_artifactory:
 	@docker login --username ${ARTIFACTORY_USERNAME} --password "${ARTIFACTORY_PASSWORD}" $(ARTIFACTORY_FQDN)
 
 push_image: ## Push the docker image to artifactory
-	@docker buildx build --push --platform linux/arm64,linux/amd64 --build-arg ZAP_VERSION=$(ZAP_VERSION) --tag $(ARTIFACTORY_FQDN)/build-dynamic-application-security-testing:$$(cat .version) .
+	@$(MAKE) base-buildx
+	@docker buildx build --push --platform linux/arm64,linux/amd64 \
+		--build-arg ZAP_VERSION=$(ZAP_VERSION) \
+		--build-arg BASE_IMAGE=$(ARTIFACTORY_FQDN)/$(BASE_IMAGE_NAME):$(ZAP_VERSION) \
+		--tag $(ARTIFACTORY_FQDN)/build-dynamic-application-security-testing:$$(cat .version) .
 	@cut-release
 
 push_latest: ## Push the latest tag to artifactory
-	@docker buildx build --push --platform linux/arm64,linux/amd64 --build-arg ZAP_VERSION=$(ZAP_VERSION) --tag $(ARTIFACTORY_FQDN)/build-dynamic-application-security-testing:latest .
+	@$(MAKE) base-buildx
+	@docker buildx build --push --platform linux/arm64,linux/amd64 \
+		--build-arg ZAP_VERSION=$(ZAP_VERSION) \
+		--build-arg BASE_IMAGE=$(ARTIFACTORY_FQDN)/$(BASE_IMAGE_NAME):$(ZAP_VERSION) \
+		--tag $(ARTIFACTORY_FQDN)/build-dynamic-application-security-testing:latest .
 
 prep_version_incrementor:
 	@echo "Installing version-incrementor"
@@ -113,9 +126,24 @@ build-local:
 	@docker build \
 		--quiet \
 		--build-arg ZAP_VERSION=$(ZAP_VERSION) \
+		--tag $(BASE_IMAGE_LOCAL_TAG) \
+		--file Dockerfile.base \
+		.
+	@docker build \
+		--quiet \
+		--build-arg ZAP_VERSION=$(ZAP_VERSION) \
+		--build-arg BASE_IMAGE=$(BASE_IMAGE_LOCAL_TAG) \
 		--tag $(ZAP_IMAGE_LOCAL_TAG) \
 		--file Dockerfile \
 		. >/dev/null
+
+.PHONY: base-buildx
+base-buildx:
+	@docker buildx build --push --platform linux/arm64,linux/amd64 \
+		--build-arg ZAP_VERSION=$(ZAP_VERSION) \
+		--tag $(ARTIFACTORY_FQDN)/$(BASE_IMAGE_NAME):$(ZAP_VERSION) \
+		--file Dockerfile.base \
+		.
 
 .PHONY: session-dir
 session-dir:
