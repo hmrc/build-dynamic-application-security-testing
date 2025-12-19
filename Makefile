@@ -113,6 +113,7 @@ build-local:
 	@docker build \
 		--quiet \
 		--build-arg ZAP_VERSION=$(ZAP_VERSION) \
+		--build-arg DOCKERHUB= \
 		--tag $(ZAP_IMAGE_LOCAL_TAG) \
 		--file Dockerfile \
 		. >/dev/null

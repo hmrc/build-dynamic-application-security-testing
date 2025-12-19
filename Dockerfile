@@ -1,6 +1,6 @@
 ARG ZAP_VERSION
 ARG DOCKERHUB=dockerhub.tax.service.gov.uk
-FROM ${DOCKERHUB}/zaproxy/zap-stable:${ZAP_VERSION}
+FROM ${DOCKERHUB:+${DOCKERHUB}/}zaproxy/zap-stable:${ZAP_VERSION}
 
 ENV ZAP_STORAGE_SESSIONS_HOST="artefacts.tax.service.gov.uk"
 ENV ZAP_STORAGE_SESSIONS_API_KEY=""
@@ -13,17 +13,29 @@ USER root
 
 RUN sed -i 's/http:/https:/g' /etc/apt/sources.list
 
-RUN echo 'Acquire::https::Verify-Peer "false";' >/etc/apt/apt.conf.d/80-ignore-tls
-RUN apt-get update && apt-get install -y ca-certificates && rm -f /etc/apt/apt.conf.d/80-ignore-tls
-
-RUN apt-get update \
-    && apt-get install --no-install-recommends -y \
+# Minimal fix: ldconfig workaround for ARM64 segmentation fault
+RUN set -eux; \
+    echo 'Acquire::https::Verify-Peer "false";' >/etc/apt/apt.conf.d/80-ignore-tls; \
+    apt-get update; \
+    arch="$(uname -m)"; \
+    if [ "${arch}" = "aarch64" ] || [ "${arch}" = "arm64" ]; then \
+        dpkg-divert --add --rename --divert /sbin/ldconfig.real /sbin/ldconfig; \
+        printf '#!/bin/sh\nexit 0\n' >/sbin/ldconfig; \
+        chmod +x /sbin/ldconfig; \
+    fi; \
+    DEBIAN_FRONTEND=noninteractive apt-get install -y ca-certificates; \
+    DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y \
         jq=1.6* \
-        rinetd=0.62* \
-    && apt-get clean \
-    && rm -rf /var/lib/apt/lists/* \
-    && touch /var/run/rinetd.pid \
-    && chown zap:zap /var/run/rinetd.pid
+        rinetd=0.62*; \
+    if [ -f /sbin/ldconfig.real ]; then \
+        rm /sbin/ldconfig; \
+        dpkg-divert --rename --remove /sbin/ldconfig; \
+    fi; \
+    apt-get clean; \
+    rm -rf /var/lib/apt/lists/*; \
+    touch /var/run/rinetd.pid; \
+    chown zap:zap /var/run/rinetd.pid; \
+    rm -f /etc/apt/apt.conf.d/80-ignore-tls
 
 USER zap
 
