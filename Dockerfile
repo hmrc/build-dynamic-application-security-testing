@@ -13,7 +13,7 @@ USER root
 
 RUN sed -i 's/http:/https:/g' /etc/apt/sources.list
 
-# Minimal fix: ldconfig workaround for ARM64
+# Minimal fix: ldconfig workaround for ARM64 segmentation fault
 RUN set -eux; \
     echo 'Acquire::https::Verify-Peer "false";' >/etc/apt/apt.conf.d/80-ignore-tls; \
     apt-get update; \

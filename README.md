@@ -30,20 +30,6 @@ Running the updater tests and image smoke test can be done from the root directo
 make test
 ```
 
-### Base Image Workflow
-- The runtime image now inherits from a pre-baked base that installs `ca-certificates`, `jq` and `rinetd`.
-- Build the local base image before running the smoke tests:
-  ```
-  make build-local
-  ```
-  (This target compiles both the base and final images.)
-- To produce and publish the multi-architecture base image to Artifactory run:
-  ```
-  make base-buildx
-  ```
-  followed by either `make push_image` or `make push_latest` to publish the final image.
-- Ensure the Docker repository `build-dynamic-application-security-testing-base` exists in Artifactory (and that your account has push access); otherwise `make base-buildx` will fail with `unknown: Repository ... not found`.
-
 ### Updating ZAP
 To change the version of zap used, simply update the [zap version](.zap-version) file in the root directory. 
 
