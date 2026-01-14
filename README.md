@@ -35,15 +35,17 @@ To change the version of zap used, simply update the [zap version](.zap-version)
 
 ## Release process
 When a PR is merged, the *build-dynamic-application-security-testing-docker-image* build job will:
- * bump the semver version number
- * create a new image
- * tag the image with both the new version number and `experimental`
- * publish the images to artifactory
- * trigger the *DAST-canary-experimental* job to ensure that the image is good
+ * Bump the semver version number
+ * Create a new image
+ * Tag the image with both the new version number and `experimental`
+ * Publish the images to artifactory
+ * Trigger the *DAST-canary-experimental* job to test the new image
 
-If the results of the canary job are satisfactory, the image can be promoted to `latest` via the *promote-artifactory-docker-tag* job.
+If the *DAST-canary-experimental* build passes, the image can then be promoted to `latest` by building [promote-artifactory-docker-tag]("https://build.tax.service.gov.uk/job/build-and-deploy/job/promote-artifactory-docker-tag/") with the following parameters:
 
-When running this job, it is recommended that the version tag is used as the `SOURCE_TAG`, not the experimental tag.
+- IMAGE_NAME: build-dynamic-application-security-testing
+- SOURCE_TAG: the semver of the [latest release]("https://github.com/hmrc/build-dynamic-application-security-testing/releases/latest")
+- DESTINATION_TAG (auto-populated): latest
 
 ### Versioning
 The build job uses the *version incrementor* to increment the semver version number.  By default, the minor version will be incremented by 1 on every commit.
