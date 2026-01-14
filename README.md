@@ -41,10 +41,10 @@ When a PR is merged, the *build-dynamic-application-security-testing-docker-imag
  * Publish the images to artifactory
  * Trigger the *DAST-canary-experimental* job to test the new image
 
-If the *DAST-canary-experimental* build passes, the image can then be promoted to `latest` by building [promote-artifactory-docker-tag]("https://build.tax.service.gov.uk/job/build-and-deploy/job/promote-artifactory-docker-tag/") with the following parameters:
+If the *DAST-canary-experimental* build passes, the image can then be promoted to `latest` by building [promote-artifactory-docker-tag](https://build.tax.service.gov.uk/job/build-and-deploy/job/promote-artifactory-docker-tag/) with the following parameters:
 
 - IMAGE_NAME: build-dynamic-application-security-testing
-- SOURCE_TAG: the semver of the [latest release]("https://github.com/hmrc/build-dynamic-application-security-testing/releases/latest")
+- SOURCE_TAG: the semver of the [latest release](https://github.com/hmrc/build-dynamic-application-security-testing/releases/latest)
 - DESTINATION_TAG (auto-populated): latest
 
 ### Versioning
@@ -53,8 +53,8 @@ The build job uses the *version incrementor* to increment the semver version num
 To create a new major release, simply update the [major version](.major-version) file in the root directory. 
 
 ## Usage
-For guidance on how to interact with this docker image, please follow the steps outlined by the [dast-config-manager]("https://github.com/hmrc/dast-config-manager").
+For guidance on how to interact with this docker image, please follow the steps outlined by the [dast-config-manager](https://github.com/hmrc/dast-config-manager).
 
 ### License
 
-This code is open source software licensed under the [Apache 2.0 License]("http://www.apache.org/licenses/LICENSE-2.0.html").
+This code is open source software licensed under the [Apache 2.0 License](http://www.apache.org/licenses/LICENSE-2.0.html).
