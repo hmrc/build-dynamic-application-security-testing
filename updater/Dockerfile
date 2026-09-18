@@ -2,7 +2,7 @@ ARG PYTHON_VERSION
 ARG DOCKERHUB=dockerhub.tax.service.gov.uk
 
 FROM ${DOCKERHUB}/python:${PYTHON_VERSION}-alpine AS pipenv
-RUN apk add --no-cache shadow~=4.15.1-r0
+RUN apk add --no-cache shadow~=4.18.0-r1
 # UID of current user who runs the build
 ARG user_id
 # GID of current user who runs the build
@@ -35,12 +35,12 @@ RUN groupmod -g 64 dialout \
     fi \
     && chown -R builder:union "${workdir}"
 RUN apk add --no-cache \
-    bash=~5.2.26-r0 \
-    docker~=26.1.5-r0 \
-    gcc~=13.2.1 \
-    git~=2.45.4-r0 \
+    bash=~5.3.9-r1 \
+    docker~=29.5.3-r1 \
+    gcc~=15.2.0 \
+    git~=2.54.0-r0 \
     musl-dev \
-    make=~4.4.1 \
+    make=~4.4.1-r4 \
     && pip install --no-cache-dir --index-url https://artefacts.tax.service.gov.uk/artifactory/api/pypi/pips/simple pipenv==2024.1.0
 USER builder
 COPY --chown=builder:union Pipfile Pipfile.lock ./
