@@ -71,7 +71,9 @@ class TestSlackNotifier(TestCase):
         self.assertIn(("Content-Type", "application/json"), headers)
         self.assertIn(("Authorization", "token"), headers)
 
-    def _assert_payload_correct(self, channels: List[str], display:str, emoji:str, text: str, blocks: List[Dict[str, Any]]) -> None:
+    def _assert_payload_correct(
+            self, channels: List[str], display:str, emoji:str, text: str, blocks: List[Dict[str, Any]]
+    ) -> None:
         self.assertEqual(
             {
                 "channelLookup": {
