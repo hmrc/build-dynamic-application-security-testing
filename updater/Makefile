@@ -22,7 +22,15 @@ DOCKER = docker run \
 	--workdir "${PWD}"
 
 SHELL := /bin/bash
-.SHELLFLAGS := -euo pipefail -O globstar -c
+.SHELLFLAGS := -euo pipefail -c
+
+SHFMT_IMAGE ?= mvdan/shfmt:v3.14.1
+SHFMT = docker run \
+	--rm \
+	--user "$(shell id -u):$(shell id -g)" \
+	--volume "$(PWD):/mnt" \
+	--workdir /mnt \
+	$(SHFMT_IMAGE)
 
 # HOST_IP regex explanation https://regex101.com/r/GOP2eB/2/f
 HOST_IP ?= $(shell ifconfig \
@@ -50,7 +58,7 @@ PYTHON_TEST_PATTERN ?= "*_?test.py" # Default to all types of tests
 PYTHON_COVERAGE_MIN = 91 # %
 PYTHON_VERSION := $(shell cat ../.python-version)
 
-.PHONY: shfmt pipenv
+.PHONY: pipenv
 pipenv:
 	@docker build \
 		--tag $@ \
@@ -159,8 +167,8 @@ stop-slack-service-stub:
 	fi
 
 .PHONY: fmt
-fmt: shfmt pipenv
-	@$(DOCKER) shfmt -l -w .
+fmt: pipenv
+	@$(SHFMT) -l -w .
 	@$(DOCKER) pipenv run black --line-length=120 .
 
 .PHONY: coverage-check
