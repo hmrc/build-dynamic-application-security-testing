@@ -11,11 +11,17 @@ ENV ZAP_FORWARD_ENABLE="false"
 
 USER root
 
-RUN sed -i 's/http:/https:/g' /etc/apt/sources.list
-
 # Minimal fix: ldconfig workaround for ARM64 segmentation fault
 RUN set -eux; \
-    echo 'Acquire::https::Verify-Peer "false";' >/etc/apt/apt.conf.d/80-ignore-tls; \
+    printf '%s\n' \
+        'deb https://snapshot.debian.org/archive/debian/20241202T000000Z bullseye main' \
+        'deb https://snapshot.debian.org/archive/debian-security/20241202T000000Z bullseye-security main' \
+        'deb https://snapshot.debian.org/archive/debian/20241202T000000Z bullseye-updates main' \
+        >/etc/apt/sources.list; \
+    { \
+        echo 'Acquire::Check-Valid-Until "false";'; \
+        echo 'Acquire::https::Verify-Peer "false";'; \
+    } >/etc/apt/apt.conf.d/80-ignore-tls; \
     apt-get update; \
     arch="$(uname -m)"; \
     if [ "${arch}" = "aarch64" ] || [ "${arch}" = "arm64" ]; then \
