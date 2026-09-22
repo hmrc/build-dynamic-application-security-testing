@@ -11,7 +11,7 @@ ENV ZAP_FORWARD_ENABLE="false"
 
 USER root
 
-RUN sed -i 's/http:/https:/g' /etc/apt/sources.list
+RUN sed -i 's|http:|https:|g' /etc/apt/sources.list.d/debian.sources
 
 # Minimal fix: ldconfig workaround for ARM64 segmentation fault
 RUN set -eux; \
@@ -26,7 +26,7 @@ RUN set -eux; \
     DEBIAN_FRONTEND=noninteractive apt-get install -y ca-certificates; \
     DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y \
         jq=1.6* \
-        rinetd=0.62*; \
+        rinetd=0.73*; \
     if [ -f /sbin/ldconfig.real ]; then \
         rm /sbin/ldconfig; \
         dpkg-divert --rename --remove /sbin/ldconfig; \

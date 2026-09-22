@@ -22,7 +22,7 @@ DOCKER = docker run \
 	--workdir "${PWD}"
 
 SHELL := /bin/bash
-.SHELLFLAGS := -euo pipefail -c
+.SHELLFLAGS := -euo pipefail -O globstar -c
 
 SHFMT_IMAGE ?= mvdan/shfmt:v3.14.1
 SHFMT = docker run \
