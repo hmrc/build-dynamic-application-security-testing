@@ -30,6 +30,7 @@ A jenkins job has been configured to trigger this daily.
 
 If updates are available, the job will fork the repository, apply the updates to the Dockerfile and raise a PR. 
 Check the alerts channel for this as manual review and merge is required.
+[slack channel](https://grid-hmrcdigital.enterprise.slack.com/archives/CFCAB3RRN)
 
 ## Making changes
 See [updater README](updater/README.md) for more guidance on making changes to the updater.
