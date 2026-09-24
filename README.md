@@ -45,6 +45,43 @@ make test
 ### Updating ZAP
 To change the version of zap used, simply update the [zap version](.zap-version) file in the root directory. 
 
+### Local DAST smoke test
+Before relying on the `DAST-canary-experimental` job, the local image and the
+DAST sidecar lifecycle can be checked with:
+
+```bash
+./build-dynamic-application-security-testing/scripts/run-local-dast-smoke.sh \
+  --parent-dir "$(pwd)"
+```
+
+Run this command from the directory containing both repositories:
+
+```text
+build-dynamic-application-security-testing/
+dast-config-manager/
+```
+
+The script builds and starts the local image, checks the ZAP API and passive
+scanners, sends a request through ZAP, configures the scanners through
+`dast-config-manager`, generates a report, evaluates the result, and shuts ZAP
+down. If the sidecar's Compose build image is unavailable from the internal
+registry, the script downloads `docker/compose:1.29.2` and tags it with the
+name expected by the sidecar.
+
+Use `--parent-dir /path/to/parent` when the repositories are elsewhere, and
+`--verbose` to print full Docker, ZAP, and sidecar output:
+
+```bash
+./build-dynamic-application-security-testing/scripts/run-local-dast-smoke.sh \
+  --parent-dir /path/to/parent \
+  --verbose
+```
+
+Startup, dependency, or lifecycle errors cause the script to fail. Findings
+returned by the synthetic smoke request are reported as warnings after the
+report has completed. Set `SMOKE_TARGET_URL` to test a reachable local or
+development target instead of the default `http://example.com/`.
+
 ## Release process
 When a PR is merged, the *build-dynamic-application-security-testing-docker-image* build job will:
  * Bump the semver version number
