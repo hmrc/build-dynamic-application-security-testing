@@ -148,20 +148,20 @@ if "$verbose"; then
 fi
 
 stage "4/8 Review ZAP startup diagnostics"
+startup_log="$(docker logs "$ZAP_CONTAINER_NAME" 2>&1 || true)"
 if "$verbose"; then
     log "Full ZAP container log:"
-    docker logs "$ZAP_CONTAINER_NAME" 2>&1 || true
+    printf '%s\n' "$startup_log"
+    startup_messages="$(printf '%s\n' "$startup_log" | grep -E '(^|[[:space:]])(WARN|ERROR|FATAL|FAILED|EXCEPTION)([[:space:]]|$)' || true)"
 else
-    startup_messages="$(docker logs "$ZAP_CONTAINER_NAME" 2>&1 | grep -E '(^|[[:space:]])(WARN|ERROR|FATAL|FAILED|EXCEPTION)([[:space:]]|$)' || true)"
-    if [[ -n "$startup_messages" ]]; then
-        printf '%s\n' "$startup_messages"
-    else
-        log "No startup warnings or errors reported"
-    fi
+    startup_messages="$(printf '%s\n' "$startup_log" | grep -E '(^|[[:space:]])(WARN|ERROR|FATAL|FAILED|EXCEPTION)([[:space:]]|$)' || true)"
 fi
 
-if docker logs "$ZAP_CONTAINER_NAME" 2>&1 | grep -Fq 'Failed to install pscanrule'; then
-    fail "ZAP reported passive-scan rule installation failures"
+if [[ -n "$startup_messages" ]]; then
+    printf '%s\n' "$startup_messages"
+    fail "ZAP startup reported errors; the local image is not healthy enough for sidecar testing"
+else
+    log "No startup warnings or errors reported"
 fi
 
 stage "5/8 Send a proxied smoke request"
