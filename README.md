@@ -12,13 +12,24 @@ Unless stated otherwise, all DAST build jobs run against the `latest` tag of thi
 ## ZAP add-ons
 The ZAP proxy runs with a versioned set of *addons* enabled. The list of currently
 supported addons is in the updaters [zap_addons](updater/zap_addons) file.
+Run the below command if you make updates to Zap to make sure you are pushing with new 
+add-ons versions.
 
+```bash 
+docker run --rm \
+  --interactive \
+  --volume "$PWD/..:$PWD/.." \
+  --workdir "$PWD" \
+  pipenv \
+  run python updater.py --no-publish
+```
 ### Automatic updates
 There is a python script that can be used to check for updates against the zap add-ons defined.
 
 A jenkins job has been configured to trigger this daily.
 
-If updates are available, the job will folk the repository, apply the updates to the Dockerfile and raise a PR.
+If updates are available, the job will fork the repository, apply the updates to the Dockerfile and raise a PR. 
+Check the alerts channel for this as manual review and merge is required.
 
 ## Making changes
 See [updater README](updater/README.md) for more guidance on making changes to the updater.
