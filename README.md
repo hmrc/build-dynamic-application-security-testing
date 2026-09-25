@@ -9,11 +9,16 @@ There are 3 Docker images available:
 
 Unless stated otherwise, all DAST build jobs run against the `latest` tag of this image.
 
-## ZAP add-ons
-The ZAP proxy runs with a versioned set of *addons* enabled. The list of currently
-supported addons is in the updaters [zap_addons](updater/zap_addons) file.
-Run the below command if you make updates to Zap to make sure you are pushing with new 
-add-ons versions.
+## Making changes
+
+### Updating ZAP and its add-ons
+The ZAP proxy runs with a versioned set of *add-ons* enabled. The list of
+supported add-ons is in [updater/zap_addons](updater/zap_addons).
+
+To change the version of ZAP used, update the [ZAP version](.zap-version) file
+in the repository root. After changing `.zap-version`, manually run the
+following command so that the Dockerfile contains add-on versions compatible
+with the new ZAP version:
 
 ```bash 
 docker run --rm \
@@ -23,27 +28,33 @@ docker run --rm \
   pipenv \
   run python updater.py --no-publish
 ```
-### Automatic updates
-There is a python script that can be used to check for updates against the zap add-ons defined.
 
-A jenkins job has been configured to trigger this daily.
+The repository root also contains a [.python-version](.python-version) file.
+It is not read by the updater Python code, but the updater `Makefile` uses it
+when selecting the Python Docker image for tests. If the supported Python
+version changes, update `.python-version` in the repository root and update
+`updater/Pipfile` and `updater/Pipfile.lock` if the updater dependency
+environment changes.
 
-If updates are available, the job will fork the repository, apply the updates to the Dockerfile and raise a PR. 
-Check the alerts channel for this as manual review and merge is required.
-[slack channel](https://grid-hmrcdigital.enterprise.slack.com/archives/CFCAB3RRN)
+### Automatic add-on updates
+The updater can check for updates to the ZAP add-ons defined in
+`updater/zap_addons`. A Jenkins job runs this check daily. If updates are
+available, it forks the repository, applies the updates to the Dockerfile,
+and raises a pull request. Manual review and merging are still required;
+check the [alerts Slack channel](https://grid-hmrcdigital.enterprise.slack.com/archives/CFCAB3RRN)
+for these notifications.
 
-## Making changes
+### Making changes to the updater
 See [updater README](updater/README.md) for more guidance on making changes to the updater.
 
-The image itself has a smoke test that proves the image can be successfully started and stopped in docker.
+The updater tests and image smoke test can be run from the repository root:
 
-Running the updater tests and image smoke test can be done from the root directory with: 
-```
+```bash
 make test
 ```
 
-### Updating ZAP
-To change the version of zap used, simply update the [zap version](.zap-version) file in the root directory. 
+The image smoke test verifies that the image can be successfully started and
+stopped in Docker.
 
 ### Local DAST smoke test
 Before relying on the `DAST-canary-experimental` job, the local image and the
