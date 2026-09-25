@@ -50,15 +50,30 @@ Before relying on the `DAST-canary-experimental` job, the local image and the
 DAST sidecar lifecycle can be checked with:
 
 ```bash
-./build-dynamic-application-security-testing/scripts/run-local-dast-smoke.sh \
-  --parent-dir "$(pwd)"
+./build-dynamic-application-security-testing/scripts/run-local-dast-smoke.sh
 ```
 
-Run this command from the directory containing both repositories:
+The script expects these three repositories to be siblings under one parent
+directory:
 
 ```text
-build-dynamic-application-security-testing/
-dast-config-manager/
+parent-directory/
+├── build-dynamic-application-security-testing/
+├── dast-config-manager/
+└── build-jobs/
+```
+
+When run from `parent-directory`, no option is needed. The script uses the
+current directory as the parent, checks that the DAST repository is present,
+and clones `dast-config-manager` and `build-jobs` from GitHub into the parent
+if either is missing. Existing directories are left unchanged.
+
+If you run the script from another location, such as the
+`build-dynamic-application-security-testing/scripts` directory, specify the
+parent explicitly:
+
+```bash
+./run-local-dast-smoke.sh --parent-dir /path/to/parent-directory
 ```
 
 The script builds and starts the local image, checks the ZAP API and passive
@@ -68,7 +83,8 @@ down. If the sidecar's Compose build image is unavailable from the internal
 registry, the script downloads `docker/compose:1.29.2` and tags it with the
 name expected by the sidecar.
 
-Use `--parent-dir /path/to/parent` when the repositories are elsewhere, and
+If your current directory is not the parent directory containing the three
+repositories, pass that parent directory with `--parent-dir`. Add
 `--verbose` to print full Docker, ZAP, and sidecar output:
 
 ```bash
