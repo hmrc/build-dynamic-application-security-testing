@@ -4,6 +4,7 @@ set -euo pipefail
 
 readonly BUILD_REPOSITORY="build-dynamic-application-security-testing"
 readonly SIDECAR_REPOSITORY="dast-config-manager"
+readonly BUILD_JOBS_REPOSITORY="build-jobs"
 readonly ZAP_CONTAINER_NAME="zap"
 readonly ZAP_HOST="${ZAP_HOST:-localhost:11000}"
 readonly START_WAIT_SECONDS="${START_WAIT_SECONDS:-180}"
@@ -23,9 +24,10 @@ Run the local DAST image smoke and sidecar lifecycle checks.
 The parent directory must contain:
   ${BUILD_REPOSITORY}/
   ${SIDECAR_REPOSITORY}/
+  ${BUILD_JOBS_REPOSITORY}/
 
 Options:
-  --parent-dir DIRECTORY  Parent directory containing both repositories.
+  --parent-dir DIRECTORY  Parent directory containing the three repositories.
   -v, --verbose           Show full command output and diagnostics.
   -h, --help              Show this help.
 EOF
@@ -84,9 +86,25 @@ require_repository() {
     [[ -f "${directory}/Makefile" ]] || fail "${name} repository has no Makefile: ${directory}"
 }
 
+clone_repository_if_missing() {
+    local directory="$1"
+    local repository="$2"
+
+    if [[ -d "$directory" ]]; then
+        return
+    fi
+
+    log "Repository ${repository} was not found; cloning it into ${parent_directory}"
+    git clone "https://github.com/hmrc/${repository}.git" "$directory" ||
+        fail "could not clone ${repository} into ${parent_directory}"
+}
+
 require_command docker
 require_command curl
 require_command make
+require_command git
+clone_repository_if_missing "$sidecar_directory" "$SIDECAR_REPOSITORY"
+clone_repository_if_missing "${parent_directory}/${BUILD_JOBS_REPOSITORY}" "$BUILD_JOBS_REPOSITORY"
 require_repository "$build_directory" "build"
 require_repository "$sidecar_directory" "sidecar"
 
