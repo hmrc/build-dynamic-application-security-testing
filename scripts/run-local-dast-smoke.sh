@@ -125,8 +125,12 @@ if ! make -C "$build_directory" start TEST_WAIT_THRESHOLD="$START_WAIT_SECONDS" 
     current_zap_container_id="$(docker inspect --format '{{.Id}}' "$ZAP_CONTAINER_NAME" 2>/dev/null || true)"
     if [[ -n "$current_zap_container_id" && "$current_zap_container_id" == "$previous_zap_container_id" ]]; then
         log "The image build failed before the existing ZAP container was replaced."
-        log "The container logs below are from an earlier run and are not evidence about this build:"
-        docker logs "$ZAP_CONTAINER_NAME" 2>&1 || true
+        if "$verbose"; then
+            log "The following container logs are from an earlier run and are not evidence about this build:"
+            docker logs "$ZAP_CONTAINER_NAME" 2>&1 || true
+        else
+            log "Existing container logs were not shown; use --verbose to inspect them."
+        fi
     else
         log "Docker startup failed; checking the current container state"
         docker inspect "$ZAP_CONTAINER_NAME" \
@@ -139,6 +143,7 @@ if ! make -C "$build_directory" start TEST_WAIT_THRESHOLD="$START_WAIT_SECONDS" 
         log "Docker startup logs:"
         docker logs "$ZAP_CONTAINER_NAME" 2>&1 || true
     fi
+    printf '[local-dast] FAIL: local DAST image build or startup failed\n' >&2
     exit 1
 fi
 zap_started_by_script=true
