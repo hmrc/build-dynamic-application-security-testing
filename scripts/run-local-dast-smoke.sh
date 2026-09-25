@@ -69,6 +69,8 @@ build_directory="${parent_directory}/${BUILD_REPOSITORY}"
 sidecar_directory="${parent_directory}/${SIDECAR_REPOSITORY}"
 sidecar_zap_host="${SIDECAR_ZAP_HOST:-}"
 build_pipfile_existed=false
+previous_zap_container_id=""
+zap_started_by_script=false
 
 require_command() {
     command -v "$1" >/dev/null 2>&1 || fail "required command not found: $1"
@@ -92,6 +94,8 @@ if [[ -e "${build_directory}/Pipfile" ]]; then
     build_pipfile_existed=true
 fi
 
+previous_zap_container_id="$(docker inspect --format '{{.Id}}' "$ZAP_CONTAINER_NAME" 2>/dev/null || true)"
+
 if [[ -z "$sidecar_zap_host" ]]; then
     host_ip="$(ifconfig 2>/dev/null | grep -m 1 -oE 'inet (10\.[0-9]+|172\.(1[6-9]|2[0-9]|3[01])|192\.168)\.[0-9]+\.[0-9]+' | grep -oE '[0-9.]+')" || true
     sidecar_zap_host="${host_ip:-host.docker.internal}:11000"
@@ -104,7 +108,7 @@ elif ! docker info >/dev/null 2>&1; then
 fi
 
 cleanup() {
-    if docker ps --format '{{.Names}}' | grep -Fxq "$ZAP_CONTAINER_NAME"; then
+    if [[ "$zap_started_by_script" == true ]] && docker ps --format '{{.Names}}' | grep -Fxq "$ZAP_CONTAINER_NAME"; then
         log "Stopping ZAP container"
         make -C "$build_directory" stop >/dev/null 2>&1 || true
     fi
@@ -118,18 +122,26 @@ trap cleanup EXIT
 
 stage "1/8 Build and start the local DAST image"
 if ! make -C "$build_directory" start TEST_WAIT_THRESHOLD="$START_WAIT_SECONDS" ZAP_HOST="$ZAP_HOST"; then
-    log "Docker startup failed; checking the container state"
-    docker inspect "$ZAP_CONTAINER_NAME" \
-        --format '[local-dast] container exit={{.State.ExitCode}} oom={{.State.OOMKilled}}' \
-        2>/dev/null || true
-    if docker inspect "$ZAP_CONTAINER_NAME" --format '{{.State.ExitCode}}' 2>/dev/null | grep -Fxq 137; then
-        log "Meaning: Docker killed ZAP for exceeding the memory available to the container runtime."
-        log "Try increasing Colima memory, for example: colima stop && colima start --memory 8"
+    current_zap_container_id="$(docker inspect --format '{{.Id}}' "$ZAP_CONTAINER_NAME" 2>/dev/null || true)"
+    if [[ -n "$current_zap_container_id" && "$current_zap_container_id" == "$previous_zap_container_id" ]]; then
+        log "The image build failed before the existing ZAP container was replaced."
+        log "The container logs below are from an earlier run and are not evidence about this build:"
+        docker logs "$ZAP_CONTAINER_NAME" 2>&1 || true
+    else
+        log "Docker startup failed; checking the current container state"
+        docker inspect "$ZAP_CONTAINER_NAME" \
+            --format '[local-dast] container exit={{.State.ExitCode}} oom={{.State.OOMKilled}}' \
+            2>/dev/null || true
+        if docker inspect "$ZAP_CONTAINER_NAME" --format '{{.State.ExitCode}}' 2>/dev/null | grep -Fxq 137; then
+            log "Meaning: Docker killed ZAP for exceeding the memory available to the container runtime."
+            log "Try increasing Colima memory, for example: colima stop && colima start --memory 8"
+        fi
+        log "Docker startup logs:"
+        docker logs "$ZAP_CONTAINER_NAME" 2>&1 || true
     fi
-    log "Docker startup logs:"
-    docker logs "$ZAP_CONTAINER_NAME" 2>&1 || true
     exit 1
 fi
+zap_started_by_script=true
 
 stage "2/8 Check the ZAP API"
 version_response="$(curl --fail --silent "http://${ZAP_HOST}/JSON/core/view/version/?")" \
