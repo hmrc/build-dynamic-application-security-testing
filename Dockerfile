@@ -1,6 +1,10 @@
 ARG ZAP_VERSION
 ARG DOCKERHUB=dockerhub.tax.service.gov.uk
-FROM dockerhub.tax.service.gov.uk/zaproxy/zap-weekly:latest
+# Pin weekly D-2026-09-30: stable 2.17.0 can skip filtering duplicate/systemic
+# alerts, leaving the API counts inconsistent with the HTML report.
+# Return to stable once it includes "Fix filtered alert bugs":
+# https://github.com/zaproxy/zaproxy/commit/f052fa3f4d003c97276d11cfaaa8e974f3090179
+FROM dockerhub.tax.service.gov.uk/zaproxy/zap-weekly@sha256:3e63f990daefd7b63a434d4794d581d7a08703c5d2e758fd3ca66f44aa0f9889
 
 ENV ZAP_STORAGE_SESSIONS_HOST="artefacts.tax.service.gov.uk"
 ENV ZAP_STORAGE_SESSIONS_API_KEY=""

@@ -63,7 +63,6 @@ main() {
         -config api.addrs.addr.name=.* \
         -config api.addrs.addr.regex=true \
         -config api.disablekey=true \
-        -config alert.systemicLimit=0 \
         -newsession "${ZAP_BUILD_NUMBER}"
 
     # Cycle through shell scripts in teardown
