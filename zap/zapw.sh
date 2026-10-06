@@ -56,6 +56,7 @@ main() {
 
     # Run ZAP
     /zap/zap.sh \
+        -dir "${ZAP_HOME}" \
         -daemon \
         -host 0.0.0.0 \
         -port "${ZAP_PORT}" \

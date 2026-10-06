@@ -35,6 +35,8 @@ RUN set -eux; \
     rm -rf /var/lib/apt/lists/*; \
     touch /var/run/rinetd.pid; \
     chown zap:zap /var/run/rinetd.pid; \
+    mkdir -p "${ZAP_HOME}/session"; \
+    chown -R zap:zap "${ZAP_HOME}"; \
     rm -f /etc/apt/apt.conf.d/80-ignore-tls
 
 USER zap
