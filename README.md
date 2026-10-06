@@ -117,11 +117,52 @@ When a PR is merged, the *build-dynamic-application-security-testing-docker-imag
  * Publish the images to artifactory
  * Trigger the *DAST-canary-experimental* job to test the new image
 
-If the *DAST-canary-experimental* build passes, the image can then be promoted to `latest` by building [promote-artifactory-docker-tag](https://build.tax.service.gov.uk/job/build-and-deploy/job/promote-artifactory-docker-tag/) with the following parameters:
+### Testing before promotion
+
+Run acceptance tests through *DAST-canary-experimental* using the `experimental`
+image. Keep `latest` pointing to the current approved image while testing, so
+changes can be validated without affecting users of the normal DAST jobs.
+
+**A passing Jenkins build is not enough: open the generated Security Assessment
+HTML report and check it for ZAP errors.** During the Python/ZAP upgrade, errors
+were found in the HTML report itself rather than surfaced as build failures.
+
+Before promoting an image:
+
+- Inspect the HTML report for ZAP error messages, exceptions, and missing or
+  incomplete scan results. A report showing no security alerts is not evidence
+  of a successful scan if it also contains errors.
+- Check that the reported findings agree with the Jenkins security result.
+  Investigate cases where Jenkins counts High, Medium, or Low findings but the
+  HTML report shows none. The HTML summary groups alert types, while the API
+  summary counts instances, so non-zero totals are not necessarily identical.
+- Compare the logs and scan duration with a previous successful canary run.
+  Investigate new errors or unexpected slowdowns before promotion.
+
+### Promoting to latest
+
+Once the experimental tests and report checks pass, record the semver image
+currently elected as `latest` so it can be restored if needed. Promote the tested
+image by building [promote-artifactory-docker-tag](https://build.tax.service.gov.uk/job/build-and-deploy/job/promote-artifactory-docker-tag/) with the following parameters:
 
 - IMAGE_NAME: build-dynamic-application-security-testing
-- SOURCE_TAG: the semver of the [latest release](https://github.com/hmrc/build-dynamic-application-security-testing/releases/latest)
+- SOURCE_TAG: the exact semver image validated by the experimental tests
 - DESTINATION_TAG (auto-populated): latest
+
+### Rollback
+
+If an issue is found after promotion, **run the promotion pipeline to elect the
+last known-good image as `latest`**:
+
+1. Open [promote-artifactory-docker-tag](https://build.tax.service.gov.uk/job/build-and-deploy/job/promote-artifactory-docker-tag/).
+2. Set `IMAGE_NAME` to `build-dynamic-application-security-testing`.
+3. Set `SOURCE_TAG` to the known-good semver recorded before promotion.
+4. Set `DESTINATION_TAG` to `latest` and run the pipeline.
+5. Rerun an affected DAST job, verify it uses the restored image, and check both
+   its Jenkins result and generated HTML report for the original issue.
+
+If the issue is found while testing `experimental`, leave `latest` on the
+approved image and fix and retest the experimental image before promotion.
 
 ### Versioning
 The build job uses the *version incrementor* to increment the semver version number.  By default, the minor version will be incremented by 1 on every commit.
