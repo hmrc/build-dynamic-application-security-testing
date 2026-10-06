@@ -1,6 +1,6 @@
 ARG ZAP_VERSION
 ARG DOCKERHUB=dockerhub.tax.service.gov.uk
-FROM dockerhub.tax.service.gov.uk/zaproxy/zap-stable:${ZAP_VERSION}
+FROM dockerhub.tax.service.gov.uk/zaproxy/zap-weekly:latest
 
 ENV ZAP_STORAGE_SESSIONS_HOST="artefacts.tax.service.gov.uk"
 ENV ZAP_STORAGE_SESSIONS_API_KEY=""
@@ -25,7 +25,7 @@ RUN set -eux; \
     fi; \
     DEBIAN_FRONTEND=noninteractive apt-get install -y ca-certificates; \
     DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y \
-        jq=1.6* \
+        jq=1.7.1* \
         rinetd=0.73*; \
     if [ -f /sbin/ldconfig.real ]; then \
         rm /sbin/ldconfig; \
@@ -35,6 +35,8 @@ RUN set -eux; \
     rm -rf /var/lib/apt/lists/*; \
     touch /var/run/rinetd.pid; \
     chown zap:zap /var/run/rinetd.pid; \
+    mkdir -p "${ZAP_HOME}/session"; \
+    chown -R zap:zap "${ZAP_HOME}"; \
     rm -f /etc/apt/apt.conf.d/80-ignore-tls
 
 USER zap
