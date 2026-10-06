@@ -25,7 +25,7 @@ RUN set -eux; \
     fi; \
     DEBIAN_FRONTEND=noninteractive apt-get install -y ca-certificates; \
     DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y \
-        jq=1.6* \
+        jq=1.7.1* \
         rinetd=0.73*; \
     if [ -f /sbin/ldconfig.real ]; then \
         rm /sbin/ldconfig; \

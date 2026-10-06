@@ -110,13 +110,12 @@ start: build-local session-dir
 
 .PHONY: build-local
 build-local:
-	@docker build \
-		--quiet \
+	@BUILDKIT_PROGRESS=plain docker build \
 		--build-arg ZAP_VERSION=$(ZAP_VERSION) \
 		--build-arg DOCKERHUB= \
 		--tag $(ZAP_IMAGE_LOCAL_TAG) \
 		--file Dockerfile \
-		. >/dev/null
+		.
 
 .PHONY: session-dir
 session-dir:
