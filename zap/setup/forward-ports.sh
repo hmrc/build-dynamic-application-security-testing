@@ -45,7 +45,7 @@ enable_forwading() {
     IFS=' ' read -r -a PORTS_ARRAY <<< "${ports_to_forward}"
     for port in "${PORTS_ARRAY[@]}"; do
         echo "Mapping localhost:${port} to ${remote_host}:${port}"
-        echo "localhost ${port} ${remote_host} ${port}" >> ./rinetd.conf
+        echo "0.0.0.0 ${port} ${remote_host} ${port}" >> ./rinetd.conf
     done
 
     rinetd --conf-file ./rinetd.conf --foreground &
