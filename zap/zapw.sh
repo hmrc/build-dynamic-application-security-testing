@@ -63,7 +63,7 @@ main() {
         -config api.addrs.addr.name=.* \
         -config api.addrs.addr.regex=true \
         -config api.disablekey=true \
-        -config addons.insights.enabled=false \
+        -addonuninstall insights \
         -newsession "${ZAP_BUILD_NUMBER}"
 
     # Cycle through shell scripts in teardown
