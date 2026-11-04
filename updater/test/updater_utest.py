@@ -173,6 +173,41 @@ class TestFetchAddonsXML(unittest.TestCase):
 class TestFillAddonsDetails(unittest.TestCase):
     maxDiff = None
 
+    def test_shared_dependencies_are_only_generated_once(self) -> None:
+        xml_string = """
+        <ZAP>
+          <addon_first><version>1</version><status>release</status>
+            <url>https://example.com/first-1.zap</url>
+            <dependencies><addons><addon><id>commonlib</id></addon></addons></dependencies>
+          </addon_first>
+          <addon_second><version>2</version><status>release</status>
+            <url>https://example.com/second-2.zap</url>
+            <dependencies><addons><addon><id>network</id></addon></addons></dependencies>
+          </addon_second>
+          <addon_network><version>3</version><status>beta</status>
+            <url>https://example.com/network-3.zap</url>
+            <dependencies><addons><addon><id>commonlib</id></addon></addons></dependencies>
+          </addon_network>
+          <addon_commonlib><version>4</version><status>release</status>
+            <url>https://example.com/commonlib-4.zap</url>
+          </addon_commonlib>
+        </ZAP>
+        """
+        for names in (["first", "second"], ["first", "second", "network", "commonlib"]):
+            with self.subTest(names=names):
+                addons = fill_addons_details([Addon(name=name) for name in names], xml_string)
+                expected_names = (
+                    ["first", "second", "network", "commonlib"]
+                    if "network" in names
+                    else ["first", "second", "commonlib", "network"]
+                )
+                self.assertEqual([addon.name for addon in addons], expected_names)
+                block = generate_dockerfile_block(addons)
+                for name in ("network", "commonlib"):
+                    self.assertEqual(block.count(f"ARG {name.upper()}_VERSION="), 1)
+                    self.assertEqual(block.count(f"{name}-"), 2)  # One removal and one download.
+                self.assertEqual(addons[0].dependencies, [Dependency(id="commonlib")])
+
     def test_return_empty_if_no_addons_passed(self) -> None:
         """
         Return empty list from correct XML file if no addons are passed.

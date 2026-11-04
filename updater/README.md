@@ -45,3 +45,14 @@ If this happens again, update the affected package's version restriction in
 `updater/Dockerfile` to a compatible version available from Alpine. From the
 `updater` directory, run `make pipenv` to check the image builds, then `make test`
 to run the updater tests.
+
+## Deployment steps
+
+After the PR builder succeeds and the PR has been approved and merged:
+
+1. Monitor the [DAST-canary-experimental](https://build.tax.service.gov.uk/job/PlatOps/job/Services/job/DAST-canary-experimental/) build job.
+2. Compare its generated report with the last report from
+   [DAST-canary-latest](https://build.tax.service.gov.uk/job/PlatOps/job/Services/job/DAST-canary-latest/). Review any changes in alerts and check
+   for scan errors.
+3. If you are happy with the changes, manually trigger the
+   [DAST-canary-latest](https://build.tax.service.gov.uk/job/PlatOps/job/Services/job/DAST-canary-latest/) build job using **Build with Parameters** to pick up the latest changes.
