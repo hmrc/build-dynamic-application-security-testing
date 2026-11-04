@@ -130,7 +130,13 @@ def main(zap_addons_path: str, dockerfile_path: str, xml_url: str, publish: bool
                 "type": "section",
                 "text": {
                     "type": "mrkdwn",
-                    "text": f"{pr.title} - <{pr.url}|Pull Request>"
+                    "text": (
+                        f"{pr.title} - <{pr.url}|Pull Request>\n\n"
+                        "If the PR builder fails, please see "
+                        "<https://github.com/hmrc/build-dynamic-application-security-testing/blob/main/updater/README.md#troubleshooting-pr-builder-failures|the troubleshooting guidance> "
+                        "for possible fixes. If it succeeds, please approve and merge the PR, then follow "
+                        "<https://github.com/hmrc/build-dynamic-application-security-testing/blob/main/updater/README.md#deployment-steps|the deployment steps in the README>."
+                    )
                 }
             }
         ]
@@ -390,7 +396,8 @@ def fill_addons_details(addons: List[Addon], xml_string: str) -> List[Addon]:
 
     addons.extend(dependencies)
 
-    return addons
+    # Recursive dependency branches can include the same add-on more than once.
+    return list({addon.name: addon for addon in addons}.values())
 
 
 def add_if_not_exists(addons: List[Addon], dependency_name: str, xml_string: str) -> None:
