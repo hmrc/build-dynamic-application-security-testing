@@ -60,7 +60,7 @@ After the PR builder succeeds and the PR has been approved and merged:
    - `IMAGE_NAME`: `build-dynamic-application-security-testing`
    - `SOURCE_TAG`: the version from step 3
    - `DESTINATION_TAG`: `latest`
-5. Once promotion succeeds, manually run
-   [DAST-canary-latest](https://build.tax.service.gov.uk/job/PlatOps/job/Services/job/DAST-canary-latest/)
+5. Once promotion succeeds, manually run **Build with Parameters** in
+   [DAST-canary-latest](https://build.tax.service.gov.uk/job/PlatOps/job/Services/job/DAST-canary-latest/) (no extra parameters are needed)
    and check its report matches the experimental report.
 
