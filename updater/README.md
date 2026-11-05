@@ -50,9 +50,17 @@ to run the updater tests.
 
 After the PR builder succeeds and the PR has been approved and merged:
 
-1. Monitor the [DAST-canary-experimental](https://build.tax.service.gov.uk/job/PlatOps/job/Services/job/DAST-canary-experimental/) build job.
+1. Monitor the [DAST-canary-experimental](https://build.tax.service.gov.uk/job/PlatOps/job/Services/job/DAST-canary-experimental/) build job. It should start automatically after the [build-dynamic-application-security-testing-multiarch-docker-image](https://build.tax.service.gov.uk/job/PlatOps/job/Dast/job/build-dynamic-application-security-testing-multiarch-docker-image/) job finishes.
 2. Compare its generated report with the last report from
    [DAST-canary-latest](https://build.tax.service.gov.uk/job/PlatOps/job/Services/job/DAST-canary-latest/). Review any changes in alerts and check
    for scan errors.
-3. If you are happy with the changes, manually trigger the
-   [DAST-canary-latest](https://build.tax.service.gov.uk/job/PlatOps/job/Services/job/DAST-canary-latest/) build job using **Build with Parameters** to pick up the latest changes.
+3. If you are happy with the changes, get the version number from this repository relating to your change (should be the latest version)
+4. Run [promote-artifactory-docker-tag](https://build.tax.service.gov.uk/job/build-and-deploy/job/promote-artifactory-docker-tag/)
+   using **Build with Parameters**:
+   - `IMAGE_NAME`: `build-dynamic-application-security-testing`
+   - `SOURCE_TAG`: the version from step 3
+   - `DESTINATION_TAG`: `latest`
+5. Once promotion succeeds, manually run
+   [DAST-canary-latest](https://build.tax.service.gov.uk/job/PlatOps/job/Services/job/DAST-canary-latest/)
+   and check its report matches the experimental report.
+
